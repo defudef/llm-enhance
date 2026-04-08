@@ -42,8 +42,39 @@ Kompatybilny wrapper dalej działa:
 uv run python main.py "Hello"
 ```
 
+## Controller MVP
+
+W repo jest też MVP osobnego controllera, który steruje routerem MoE bez modyfikowania checkpointu Trinity.
+
+- controller bierze embedding promptu
+- robi pooling promptu
+- produkuje biasy `num_moe_layers x num_experts`
+- Trinity używa tych biasów przed `topk` w routerze
+
+Trening:
+
+```bash
+uv run python train_controller.py data/train.jsonl --offline --epochs 1
+```
+
+Format `JSONL`:
+
+```json
+{"prompt":"Ile to 2+2?","response":"4"}
+{"prompt":"Zaplanuj prosty weekend w Krakowie","response":"Sobota: ..."}
+```
+
+Inference z wytrenowanym controllerem:
+
+```bash
+uv run python infer_controller.py \
+  "Ile to 17 * 19?" \
+  --controller-checkpoint artifacts/controller.pt \
+  --offline
+```
+
 ## Current Limits
 
-- Generacja na razie działa bez KV cache, więc każdy kolejny token przelicza cały kontekst od nowa.
-- Maski attention są referencyjne, nie zoptymalizowane pod długi kontekst.
-- Domyślne `dtype` na `mps` to `float16`, bo jest bardziej przewidywalne niż `bfloat16`.
+- Ładowanie pełnych wag przy starcie procesu nadal trochę trwa, bo model nie jest trzymany w długowiecznym serwisie.
+- Maski attention są nadal referencyjne, nie specjalnie optymalizowane pod bardzo długi kontekst.
+- MVP controllera trenuje dane przykład po przykładzie, bez batching/padding pipeline.
