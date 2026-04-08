@@ -1,0 +1,27 @@
+[project]
+name = "llm-enhance"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "huggingface-hub>=0.34.0",
+    "numpy>=2.2.0",
+    "safetensors>=0.5.0",
+    "tokenizers>=0.21.0",
+    "torch>=2.6.0",
+    "typer>=0.16.0",
+]
+
+[project.scripts]
+llm-enhance = "trinity.cli:run"
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["trinity"]
