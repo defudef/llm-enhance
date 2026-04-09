@@ -17,6 +17,16 @@ uv run llm-enhance \
   --max-new-tokens 16
 ```
 
+Z controllerem:
+
+```bash
+uv run llm-enhance \
+  "Ile to 17 * 19?" \
+  --with-controller \
+  --controller-strength 0.2 \
+  --offline
+```
+
 Jeśli chcesz podać już sformatowany prompt, użyj `--raw-prompt`.
 Domyślnie backend jest wykrywany automatycznie w kolejności `cuda -> mps -> cpu`. `--device` zostaje tylko jako ręczny override.
 `--dtype auto` dobiera precision tak:
@@ -70,7 +80,28 @@ Inference z wytrenowanym controllerem:
 uv run python infer_controller.py \
   "Ile to 17 * 19?" \
   --controller-checkpoint artifacts/controller.pt \
+  --controller-strength 0.2 \
   --offline
+```
+
+To samo przez główne CLI:
+
+```bash
+uv run llm-enhance \
+  "Ile to 17 * 19?" \
+  --with-controller \
+  --controller-strength 0.2 \
+  --offline
+```
+
+Ewaluacja `base vs controller`:
+
+```bash
+uv run python eval_controller.py data/smoke.jsonl --offline
+uv run python eval_controller.py data/smoke.jsonl \
+  --controller-checkpoint artifacts/controller.pt \
+  --offline \
+  --results-path artifacts/eval.jsonl
 ```
 
 ## Current Limits

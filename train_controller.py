@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 from typing import Annotated
 
@@ -59,6 +60,21 @@ def load_jsonl(path: Path) -> list[dict]:
     return records
 
 
+def split_train_val(
+    records: list[dict],
+    *,
+    val_split: float,
+    seed: int,
+) -> tuple[list[dict], list[dict]]:
+    if val_split <= 0 or len(records) < 2:
+        return records, []
+    shuffled = list(records)
+    random.Random(seed).shuffle(shuffled)
+    val_count = max(1, int(round(len(shuffled) * val_split)))
+    val_count = min(val_count, len(shuffled) - 1)
+    return shuffled[val_count:], shuffled[:val_count]
+
+
 def build_training_example(
     tokenizer: AfmoeTokenizer,
     *,
@@ -100,6 +116,91 @@ def save_controller_checkpoint(
     )
 
 
+def set_optimizer_lr(
+    optimizer: AdamW,
+    *,
+    base_lr: float,
+    global_step: int,
+    warmup_steps: int,
+) -> float:
+    if warmup_steps <= 0:
+        lr = base_lr
+    else:
+        lr = base_lr * min(1.0, (global_step + 1) / warmup_steps)
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = lr
+    return lr
+
+
+def build_tensors(
+    tokenizer: AfmoeTokenizer,
+    record: dict,
+    *,
+    eos_token_id: int | None,
+    device: torch.device,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    prompt_ids, model_input_ids, labels = build_training_example(
+        tokenizer,
+        prompt=record["prompt"],
+        response=record["response"],
+        system_prompt=record.get("system_prompt"),
+        eos_token_id=eos_token_id,
+    )
+    controller_input_ids = torch.tensor([prompt_ids], device=device, dtype=torch.long)
+    input_ids = torch.tensor([model_input_ids], device=device, dtype=torch.long)
+    label_tensor = torch.tensor([labels], device=device, dtype=torch.long)
+    return controller_input_ids, input_ids, label_tensor
+
+
+@torch.no_grad()
+def evaluate_loss(
+    model: TrinityWithController,
+    tokenizer: AfmoeTokenizer,
+    dataset: list[dict],
+    *,
+    eos_token_id: int | None,
+    device: torch.device,
+    router_bias_l2: float,
+) -> tuple[float | None, float | None]:
+    if not dataset:
+        return None, None
+
+    was_training = model.controller.training
+    model.controller.eval()
+    total_loss = 0.0
+    total_bias_l2 = 0.0
+    finite_count = 0
+
+    for record in dataset:
+        controller_input_ids, input_ids, label_tensor = build_tensors(
+            tokenizer,
+            record,
+            eos_token_id=eos_token_id,
+            device=device,
+        )
+        output = model(
+            input_ids,
+            controller_input_ids=controller_input_ids,
+            labels=label_tensor,
+        )
+        if output.loss is None or output.controller_router_biases is None:
+            continue
+        bias_penalty = output.controller_router_biases.pow(2).mean()
+        val_loss = output.loss + router_bias_l2 * bias_penalty
+        if not torch.isfinite(val_loss):
+            continue
+        total_loss += output.loss.item()
+        total_bias_l2 += bias_penalty.item()
+        finite_count += 1
+
+    if was_training:
+        model.controller.train()
+
+    if finite_count == 0:
+        return None, None
+    return total_loss / finite_count, total_bias_l2 / finite_count
+
+
 @app.command()
 def train(
     dataset_path: Annotated[
@@ -128,7 +229,7 @@ def train(
     dtype: Annotated[
         str,
         typer.Option(help="Parameter dtype: auto, float16, bfloat16, or float32."),
-    ] = "auto",
+    ] = "float32",
     controller_dim: Annotated[
         int, typer.Option(help="Latent dimension inside the controller.")
     ] = 256,
@@ -137,16 +238,36 @@ def train(
     ] = 1024,
     controller_bias_scale: Annotated[
         float, typer.Option(help="Max absolute router bias after tanh squashing.")
-    ] = 1.0,
+    ] = 0.02,
     epochs: Annotated[
         int, typer.Option(help="Number of full passes over the dataset.")
     ] = 1,
     learning_rate: Annotated[
         float, typer.Option(help="AdamW learning rate for the controller.")
-    ] = 1e-4,
+    ] = 1e-6,
+    warmup_steps: Annotated[
+        int, typer.Option(help="Linear learning-rate warmup over optimizer steps.")
+    ] = 20,
     weight_decay: Annotated[
         float, typer.Option(help="AdamW weight decay.")
     ] = 0.01,
+    max_grad_norm: Annotated[
+        float, typer.Option(help="Clip controller gradient norm to this value.")
+    ] = 1.0,
+    router_bias_l2: Annotated[
+        float, typer.Option(help="L2 penalty on controller router biases.")
+    ] = 1e-4,
+    val_dataset_path: Annotated[
+        Path | None,
+        typer.Option(help="Optional JSONL validation dataset. If omitted, --val-split is used."),
+    ] = None,
+    val_split: Annotated[
+        float,
+        typer.Option(help="Validation split from train data when no validation file is provided."),
+    ] = 0.2,
+    seed: Annotated[
+        int, typer.Option(help="Random seed used for train/validation split.")
+    ] = 42,
     grad_accum_steps: Annotated[
         int, typer.Option(help="Gradient accumulation steps.")
     ] = 1,
@@ -159,6 +280,17 @@ def train(
         dataset = dataset[:max_examples]
     if not dataset:
         raise typer.BadParameter("Dataset is empty.")
+    if val_dataset_path is not None:
+        train_dataset = dataset
+        val_dataset = load_jsonl(val_dataset_path)
+    else:
+        train_dataset, val_dataset = split_train_val(
+            dataset,
+            val_split=val_split,
+            seed=seed,
+        )
+    if not train_dataset:
+        raise typer.BadParameter("Training split is empty.")
 
     device_obj = resolve_device(device)
     param_dtype = resolve_dtype(dtype, device_obj)
@@ -187,7 +319,7 @@ def train(
             hidden_dim=controller_hidden_dim,
             bias_scale=controller_bias_scale,
         )
-    ).to(device=device_obj, dtype=param_dtype)
+    ).to(device=device_obj, dtype=torch.float32)
     model = TrinityWithController(base_model, controller, freeze_base_model=True)
     optimizer = AdamW(
         model.controller.parameters(),
@@ -196,29 +328,22 @@ def train(
     )
 
     global_step = 0
-    status(f"Training on {len(dataset)} example(s)...")
+    skipped_steps = 0
+    current_lr = 0.0
+    status(
+        f"Training on {len(train_dataset)} example(s), validating on {len(val_dataset)} example(s)..."
+    )
     for epoch in range(epochs):
         total_loss = 0.0
+        total_bias_l2 = 0.0
+        finite_examples = 0
         optimizer.zero_grad(set_to_none=True)
-        for example_idx, record in enumerate(dataset, start=1):
-            prompt = record["prompt"]
-            response = record["response"]
-            system_prompt = record.get("system_prompt")
-            prompt_ids, model_input_ids, labels = build_training_example(
+        for example_idx, record in enumerate(train_dataset, start=1):
+            controller_input_ids, input_ids, label_tensor = build_tensors(
                 tokenizer,
-                prompt=prompt,
-                response=response,
-                system_prompt=system_prompt,
                 eos_token_id=eos_token_id,
-            )
-            controller_input_ids = torch.tensor(
-                [prompt_ids], device=device_obj, dtype=torch.long
-            )
-            input_ids = torch.tensor(
-                [model_input_ids], device=device_obj, dtype=torch.long
-            )
-            label_tensor = torch.tensor(
-                [labels], device=device_obj, dtype=torch.long
+                device=device_obj,
+                record=record,
             )
 
             output = model(
@@ -228,26 +353,91 @@ def train(
             )
             if output.loss is None:
                 raise RuntimeError("Expected a loss value during controller training.")
-            loss = output.loss / grad_accum_steps
+            if output.controller_router_biases is None:
+                raise RuntimeError("Expected controller router biases during training.")
+
+            bias_penalty = output.controller_router_biases.pow(2).mean()
+            train_loss = output.loss + router_bias_l2 * bias_penalty
+            if not torch.isfinite(train_loss):
+                skipped_steps += 1
+                optimizer.zero_grad(set_to_none=True)
+                status(
+                    f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(dataset)} skipped non-finite loss={train_loss.item()}"
+                )
+                continue
+
+            loss = train_loss / grad_accum_steps
             loss.backward()
             total_loss += output.loss.item()
+            total_bias_l2 += bias_penalty.item()
+            finite_examples += 1
 
             if example_idx % grad_accum_steps == 0:
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    model.controller.parameters(),
+                    max_norm=max_grad_norm,
+                    error_if_nonfinite=False,
+                )
+                if not torch.isfinite(grad_norm):
+                    skipped_steps += 1
+                    optimizer.zero_grad(set_to_none=True)
+                    status(
+                        f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}"
+                    )
+                    continue
+                current_lr = set_optimizer_lr(
+                    optimizer,
+                    base_lr=learning_rate,
+                    global_step=global_step,
+                    warmup_steps=warmup_steps,
+                )
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
                 global_step += 1
 
-            if example_idx == len(dataset) and example_idx % grad_accum_steps != 0:
+            if example_idx == len(train_dataset) and example_idx % grad_accum_steps != 0:
+                grad_norm = torch.nn.utils.clip_grad_norm_(
+                    model.controller.parameters(),
+                    max_norm=max_grad_norm,
+                    error_if_nonfinite=False,
+                )
+                if not torch.isfinite(grad_norm):
+                    skipped_steps += 1
+                    optimizer.zero_grad(set_to_none=True)
+                    status(
+                        f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}"
+                    )
+                    continue
+                current_lr = set_optimizer_lr(
+                    optimizer,
+                    base_lr=learning_rate,
+                    global_step=global_step,
+                    warmup_steps=warmup_steps,
+                )
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
                 global_step += 1
 
             status(
-                f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(dataset)} loss={output.loss.item():.4f}"
+                f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} train_loss={output.loss.item():.4f} bias_l2={bias_penalty.item():.6f} lr={current_lr:.2e}"
             )
 
-        avg_loss = total_loss / len(dataset)
-        status(f"epoch {epoch + 1} avg_loss={avg_loss:.4f}")
+        avg_loss = total_loss / max(finite_examples, 1)
+        avg_bias_l2 = total_bias_l2 / max(finite_examples, 1)
+        val_loss, val_bias_l2 = evaluate_loss(
+            model,
+            tokenizer,
+            val_dataset,
+            eos_token_id=eos_token_id,
+            device=device_obj,
+            router_bias_l2=router_bias_l2,
+        )
+        val_msg = "val_loss=n/a"
+        if val_loss is not None and val_bias_l2 is not None:
+            val_msg = f"val_loss={val_loss:.4f} val_bias_l2={val_bias_l2:.6f}"
+        status(
+            f"epoch {epoch + 1} train_loss={avg_loss:.4f} train_bias_l2={avg_bias_l2:.6f} {val_msg} lr={current_lr:.2e} finite_examples={finite_examples} skipped_steps={skipped_steps}"
+        )
         save_controller_checkpoint(output_path, model.controller, optimizer, global_step)
 
     status(f"Saved controller checkpoint to {output_path}")

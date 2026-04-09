@@ -95,6 +95,12 @@ def infer(
     dtype: Annotated[
         str, typer.Option(help="Parameter dtype: auto, float16, bfloat16, or float32.")
     ] = "auto",
+    controller_strength: Annotated[
+        float,
+        typer.Option(
+            help="Multiplier applied to controller router biases during inference."
+        ),
+    ] = 0.2,
     system_prompt: Annotated[
         str | None, typer.Option(help="Optional system prompt for chat formatting.")
     ] = None,
@@ -134,7 +140,7 @@ def infer(
     controller = load_controller_checkpoint(
         controller_checkpoint,
         device=device_obj,
-        dtype=param_dtype,
+        dtype=torch.float32,
     )
     model = TrinityWithController(base_model, controller, freeze_base_model=True)
 
@@ -157,6 +163,7 @@ def infer(
     _ = model.generate(
         input_ids,
         controller_input_ids=input_ids,
+        controller_strength=controller_strength,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_k=top_k,

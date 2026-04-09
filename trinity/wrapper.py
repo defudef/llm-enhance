@@ -48,9 +48,25 @@ class TrinityWithController(nn.Module):
         self,
         controller_input_ids: torch.Tensor,
         controller_attention_mask: torch.Tensor | None = None,
+        controller_strength: float = 1.0,
     ) -> torch.Tensor:
+        if controller_strength == 0:
+            return torch.zeros(
+                (
+                    controller_input_ids.shape[0],
+                    self.controller.config.num_moe_layers,
+                    self.controller.config.num_experts,
+                ),
+                device=controller_input_ids.device,
+                dtype=torch.float32,
+            )
+
         prompt_embeds = self.get_controller_prompt_embeds(controller_input_ids)
-        return self.controller(prompt_embeds, controller_attention_mask)
+        controller_dtype = next(self.controller.parameters()).dtype
+        prompt_embeds = prompt_embeds.to(dtype=controller_dtype)
+        return controller_strength * self.controller(
+            prompt_embeds, controller_attention_mask
+        ).to(torch.float32)
 
     def forward(
         self,
@@ -58,6 +74,7 @@ class TrinityWithController(nn.Module):
         *,
         controller_input_ids: torch.Tensor | None = None,
         controller_attention_mask: torch.Tensor | None = None,
+        controller_strength: float = 1.0,
         labels: torch.Tensor | None = None,
         past_key_values: PastKeyValues | None = None,
         use_cache: bool = False,
@@ -68,6 +85,7 @@ class TrinityWithController(nn.Module):
         router_biases = self.compute_controller_router_biases(
             controller_input_ids,
             controller_attention_mask=controller_attention_mask,
+            controller_strength=controller_strength,
         )
         output: CausalLMOutput = self.base_model(
             input_ids,
@@ -99,6 +117,7 @@ class TrinityWithController(nn.Module):
         *,
         controller_input_ids: torch.Tensor | None = None,
         controller_attention_mask: torch.Tensor | None = None,
+        controller_strength: float = 1.0,
         max_new_tokens: int = 32,
         temperature: float = 0.0,
         top_k: int = 50,
@@ -110,6 +129,7 @@ class TrinityWithController(nn.Module):
         router_biases = self.compute_controller_router_biases(
             controller_input_ids,
             controller_attention_mask=controller_attention_mask,
+            controller_strength=controller_strength,
         )
         return self.base_model.generate(
             input_ids,

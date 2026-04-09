@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 from typing import Annotated
 
 import torch
 import typer
 
 from .config import AfmoeConfig
+from .controller import PromptPoolingController, PromptPoolingControllerConfig
 from .hf import ensure_local_repo, load_checkpoint_into_model
 from .model import AfmoeForCausalLM
 from .tokenizer import AfmoeTokenizer
+from .wrapper import TrinityWithController
 
 app = typer.Typer(
     add_completion=False,
@@ -57,6 +60,21 @@ def resolve_dtype(name: str, device: torch.device) -> torch.dtype:
     return torch.float32
 
 
+def load_controller_checkpoint(
+    checkpoint_path: Path,
+    *,
+    device: torch.device,
+    dtype: torch.dtype,
+) -> PromptPoolingController:
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    controller = PromptPoolingController(
+        PromptPoolingControllerConfig(**checkpoint["controller_config"])
+    ).to(device=device, dtype=dtype)
+    controller.load_state_dict(checkpoint["controller_state_dict"])
+    controller.eval()
+    return controller
+
+
 @app.command()
 def infer(
     prompt: Annotated[str, typer.Argument(help="User prompt to run through the model.")],
@@ -78,6 +96,25 @@ def infer(
             help="Use only already cached local files and avoid network checks."
         ),
     ] = False,
+    with_controller: Annotated[
+        bool,
+        typer.Option(
+            "--with-controller",
+            help="Enable the router controller checkpoint from artifacts/controller.pt.",
+        ),
+    ] = False,
+    controller_checkpoint: Annotated[
+        Path,
+        typer.Option(
+            help="Optional controller checkpoint path. Used only with --with-controller."
+        ),
+    ] = Path("artifacts/controller.pt"),
+    controller_strength: Annotated[
+        float,
+        typer.Option(
+            help="Multiplier applied to controller router biases during inference."
+        ),
+    ] = 0.2,
     device: Annotated[
         str, typer.Option(help="Device override: auto, cuda, mps, or cpu.")
     ] = "auto",
@@ -125,16 +162,37 @@ def infer(
         )
 
     status(f"Initializing model on {device_obj.type} with {str(param_dtype).replace('torch.', '')}...")
-    model = AfmoeForCausalLM(config, device=device_obj, dtype=param_dtype)
+    base_model = AfmoeForCausalLM(config, device=device_obj, dtype=param_dtype)
     status("Loading weights...")
-    load_checkpoint_into_model(model, repo_dir)
-    model.eval()
+    load_checkpoint_into_model(base_model, repo_dir)
+    base_model.eval()
+
+    model: AfmoeForCausalLM | TrinityWithController
+    if with_controller:
+        if not controller_checkpoint.exists():
+            raise typer.BadParameter(
+                f"Controller checkpoint not found at {controller_checkpoint}. "
+                "Train one first or pass --controller-checkpoint."
+            )
+        status(f"Loading controller from {controller_checkpoint}...")
+        controller = load_controller_checkpoint(
+            controller_checkpoint,
+            device=device_obj,
+            dtype=torch.float32,
+        )
+        model = TrinityWithController(base_model, controller, freeze_base_model=True)
+        model.eval()
+    else:
+        model = base_model
 
     input_ids = torch.tensor(
         [tokenizer.encode(model_prompt)], device=device_obj, dtype=torch.long
     )
     eos_token_id = tokenizer.token_to_id(tokenizer.eos_token)
-    status(f"Generating up to {max_new_tokens} token(s)...")
+    status(
+        f"Generating up to {max_new_tokens} token(s)"
+        + (" with controller..." if with_controller else "...")
+    )
     streamed_token_ids: list[int] = []
 
     def on_token(next_token: torch.Tensor) -> None:
@@ -145,14 +203,26 @@ def infer(
         sys.stdout.write(tokenizer.decode([token_id], skip_special_tokens=False))
         sys.stdout.flush()
 
-    output_ids = model.generate(
-        input_ids,
-        max_new_tokens=max_new_tokens,
-        temperature=temperature,
-        top_k=top_k,
-        eos_token_id=eos_token_id,
-        token_callback=on_token,
-    )
+    if with_controller:
+        output_ids = model.generate(
+            input_ids,
+            controller_input_ids=input_ids,
+            controller_strength=controller_strength,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            eos_token_id=eos_token_id,
+            token_callback=on_token,
+        )
+    else:
+        output_ids = model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            eos_token_id=eos_token_id,
+            token_callback=on_token,
+        )
     if streamed_token_ids:
         sys.stdout.write("\n")
         sys.stdout.flush()
