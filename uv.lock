@@ -255,6 +255,7 @@ source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },
     { name = "numpy" },
+    { name = "rich" },
     { name = "safetensors" },
     { name = "tokenizers" },
     { name = "torch" },
@@ -265,6 +266,7 @@ dependencies = [
 requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.34.0" },
     { name = "numpy", specifier = ">=2.2.0" },
+    { name = "rich", specifier = ">=13.0.0" },
     { name = "safetensors", specifier = ">=0.5.0" },
     { name = "tokenizers", specifier = ">=0.21.0" },
     { name = "torch", specifier = ">=2.6.0" },

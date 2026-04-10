@@ -166,11 +166,23 @@ class AfmoeTokenChoiceRouter(nn.Module):
         )
 
     def forward(
-        self, hidden_states: torch.Tensor, expert_bias: torch.Tensor | None
+        self,
+        hidden_states: torch.Tensor,
+        expert_bias: torch.Tensor | None,
+        controller_bias: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        _, _, hidden_dim = hidden_states.shape
+        batch_size, seq_len, hidden_dim = hidden_states.shape
         hidden_states = hidden_states.reshape(-1, hidden_dim)
         scores = self.gate(hidden_states).to(torch.float32)
+
+        if controller_bias is not None:
+            if controller_bias.ndim == 1:
+                controller_bias = controller_bias.unsqueeze(0)
+            controller_bias = controller_bias.to(scores.device, dtype=torch.float32)
+            controller_bias = controller_bias[:, None, :].expand(
+                batch_size, seq_len, -1
+            )
+            scores = scores + controller_bias.reshape(-1, self.num_experts)
 
         if self.score_func == "sigmoid":
             scores = torch.sigmoid(scores)
@@ -221,10 +233,19 @@ class AfmoeMoE(nn.Module):
             requires_grad=False,
         )
 
-    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        *,
+        controller_bias: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         batch_size, seq_len, hidden_dim = hidden_states.shape
         hidden_states_flat = hidden_states.reshape(-1, hidden_dim)
-        top_scores, selected_experts = self.router(hidden_states, self.expert_bias)
+        top_scores, selected_experts = self.router(
+            hidden_states,
+            self.expert_bias,
+            controller_bias=controller_bias,
+        )
 
         if self.shared_experts is not None:
             output = self.shared_experts(hidden_states_flat)
@@ -383,6 +404,7 @@ class AfmoeDecoderLayer(nn.Module):
         attention_mask: torch.Tensor,
         past_key_value: PastKeyValue | None = None,
         use_cache: bool = False,
+        router_bias: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, PastKeyValue | None]:
         residual = hidden_states
         hidden_states = self.input_layernorm(hidden_states)
@@ -398,7 +420,10 @@ class AfmoeDecoderLayer(nn.Module):
 
         residual = hidden_states
         hidden_states = self.pre_mlp_layernorm(hidden_states)
-        hidden_states = self.mlp(hidden_states)
+        if isinstance(self.mlp, AfmoeMoE):
+            hidden_states = self.mlp(hidden_states, controller_bias=router_bias)
+        else:
+            hidden_states = self.mlp(hidden_states)
         hidden_states = self.post_mlp_layernorm(hidden_states)
         return residual + hidden_states, present_key_value
 
@@ -434,27 +459,43 @@ class AfmoeModel(nn.Module):
         self.norm = AfmoeRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.rotary_emb = AfmoeRotaryEmbedding(config)
 
+    def get_input_embeddings(self) -> nn.Embedding:
+        return self.embed_tokens
+
     def forward(
         self,
-        input_ids: torch.Tensor,
+        input_ids: torch.Tensor | None = None,
         *,
+        inputs_embeds: torch.Tensor | None = None,
+        controller_router_biases: torch.Tensor | None = None,
         past_key_values: PastKeyValues | None = None,
         use_cache: bool = False,
         cache_position: int = 0,
     ) -> ModelOutput:
-        batch_size, seq_len = input_ids.shape
-        hidden_states = self.embed_tokens(input_ids)
+        if (input_ids is None) == (inputs_embeds is None):
+            raise ValueError("Specify exactly one of input_ids or inputs_embeds.")
+
+        if inputs_embeds is None:
+            assert input_ids is not None
+            batch_size, seq_len = input_ids.shape
+            hidden_states = self.embed_tokens(input_ids)
+            device = input_ids.device
+        else:
+            batch_size, seq_len, _ = inputs_embeds.shape
+            hidden_states = inputs_embeds
+            device = inputs_embeds.device
         if self.config.mup_enabled:
             hidden_states = hidden_states * math.sqrt(self.config.hidden_size)
 
         position_ids = torch.arange(
-            cache_position, cache_position + seq_len, device=input_ids.device
+            cache_position, cache_position + seq_len, device=device
         ).unsqueeze(0).expand(batch_size, -1)
         position_embeddings = self.rotary_emb(hidden_states, position_ids)
         if past_key_values is None:
             past_key_values = [None] * len(self.layers)
 
         next_past_key_values: PastKeyValues | None = [] if use_cache else None
+        moe_layer_idx = 0
 
         for layer_idx, layer in enumerate(self.layers):
             layer_past = past_key_values[layer_idx]
@@ -464,12 +505,12 @@ class AfmoeModel(nn.Module):
             key_positions = torch.arange(
                 cache_position - past_len,
                 cache_position + seq_len,
-                device=input_ids.device,
+                device=device,
             )
             attention_mask = causal_mask(
                 position_ids[0],
                 key_positions,
-                device=input_ids.device,
+                device=device,
                 dtype=torch.float32,
                 sliding_window=(
                     self.config.sliding_window
@@ -483,7 +524,15 @@ class AfmoeModel(nn.Module):
                 attention_mask=attention_mask,
                 past_key_value=layer_past,
                 use_cache=use_cache,
+                router_bias=(
+                    None
+                    if controller_router_biases is None
+                    or layer_idx < self.config.num_dense_layers
+                    else controller_router_biases[:, moe_layer_idx, :]
+                ),
             )
+            if layer_idx >= self.config.num_dense_layers:
+                moe_layer_idx += 1
             if next_past_key_values is not None:
                 next_past_key_values.append(present_key_value)
 
@@ -504,14 +553,18 @@ class AfmoeForCausalLM(nn.Module):
 
     def forward(
         self,
-        input_ids: torch.Tensor,
+        input_ids: torch.Tensor | None = None,
         *,
+        inputs_embeds: torch.Tensor | None = None,
+        controller_router_biases: torch.Tensor | None = None,
         past_key_values: PastKeyValues | None = None,
         use_cache: bool = False,
         cache_position: int = 0,
     ) -> CausalLMOutput:
         model_output = self.model(
             input_ids,
+            inputs_embeds=inputs_embeds,
+            controller_router_biases=controller_router_biases,
             past_key_values=past_key_values,
             use_cache=use_cache,
             cache_position=cache_position,
@@ -531,9 +584,15 @@ class AfmoeForCausalLM(nn.Module):
         top_k: int = 50,
         eos_token_id: int | None = None,
         token_callback: Callable[[torch.Tensor], None] | None = None,
+        controller_router_biases: torch.Tensor | None = None,
     ) -> torch.Tensor:
         generated = input_ids
-        output = self(generated, use_cache=True, cache_position=0)
+        output = self(
+            generated,
+            use_cache=True,
+            cache_position=0,
+            controller_router_biases=controller_router_biases,
+        )
         past_key_values = output.past_key_values
         logits = output.logits[:, -1, :]
 
@@ -548,6 +607,7 @@ class AfmoeForCausalLM(nn.Module):
                 break
             output = self(
                 next_token,
+                controller_router_biases=controller_router_biases,
                 past_key_values=past_key_values,
                 use_cache=True,
                 cache_position=generated.shape[1] - 1,

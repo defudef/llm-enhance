@@ -40,6 +40,14 @@ class AfmoeConfig:
     topk_group: int
     dtype: str = "bfloat16"
 
+    @property
+    def moe_layer_indices(self) -> list[int]:
+        return list(range(self.num_dense_layers, self.num_hidden_layers))
+
+    @property
+    def num_moe_layers(self) -> int:
+        return self.num_hidden_layers - self.num_dense_layers
+
     @classmethod
     def from_dict(cls, data: dict) -> "AfmoeConfig":
         layer_types = data.get("layer_types")
