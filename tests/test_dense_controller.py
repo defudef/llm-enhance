@@ -51,6 +51,21 @@ class DenseControllerTests(unittest.TestCase):
 
         self.assertEqual(tuple(soft_prompt.shape), (2, 3, 8))
 
+    def test_soft_prompt_controller_returns_prompt_dtype(self) -> None:
+        controller = PromptPoolingSoftPromptController(
+            PromptPoolingSoftPromptControllerConfig(
+                hidden_size=8,
+                num_virtual_tokens=2,
+                controller_dim=4,
+                hidden_dim=16,
+            )
+        ).to(dtype=torch.float32)
+        prompt_embeds = torch.randn(1, 4, 8, dtype=torch.float16)
+
+        soft_prompt = controller(prompt_embeds)
+
+        self.assertEqual(soft_prompt.dtype, torch.float16)
+
     def test_prepend_soft_prompt_extends_attention_mask(self) -> None:
         inputs_embeds = torch.randn(2, 5, 8)
         soft_prompt_embeds = torch.randn(2, 3, 8)

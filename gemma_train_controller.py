@@ -28,6 +28,7 @@ from trinity.gemma_runtime import (
     GemmaSoftPromptRuntime,
     build_training_example,
     load_jsonl,
+    prepend_per_layer_inputs,
     save_gemma_controller_checkpoint,
 )
 
@@ -103,6 +104,67 @@ def build_tensors(
     return prompt_tensor, input_ids, attention_mask, label_tensor
 
 
+def forward_soft_prompt_loss(
+    runtime: GemmaSoftPromptRuntime,
+    controller: PromptPoolingSoftPromptController,
+    *,
+    prompt_tensor: torch.Tensor,
+    input_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
+    labels: torch.Tensor,
+) -> torch.Tensor | None:
+    prompt_embeds = runtime.model.get_input_embeddings()(prompt_tensor)
+    input_embeds = runtime.model.get_input_embeddings()(input_ids)
+    soft_prompt = controller(prompt_embeds)
+    combined_embeds, combined_mask = prepend_soft_prompt(
+        inputs_embeds=input_embeds,
+        soft_prompt_embeds=soft_prompt,
+        attention_mask=attention_mask,
+    )
+    combined_per_layer_inputs = prepend_per_layer_inputs(
+        per_layer_inputs=runtime.build_per_layer_inputs(input_ids),
+        prefix_length=soft_prompt.shape[1],
+    )
+    prefix_labels = torch.full(
+        (labels.shape[0], soft_prompt.shape[1]),
+        -100,
+        device=labels.device,
+        dtype=labels.dtype,
+    )
+    combined_labels = torch.cat([prefix_labels, labels], dim=1)
+
+    outputs = runtime.model.model.language_model(
+        inputs_embeds=combined_embeds,
+        attention_mask=combined_mask,
+        per_layer_inputs=combined_per_layer_inputs,
+        return_dict=True,
+    )
+    hidden_states = outputs.last_hidden_state
+    logits = runtime.model.lm_head(hidden_states)
+    final_logit_softcapping = runtime.model.config.get_text_config().final_logit_softcapping
+    if final_logit_softcapping is not None:
+        logits = logits / final_logit_softcapping
+        logits = torch.tanh(logits)
+        logits = logits * final_logit_softcapping
+    logits = logits.float()
+    shift_logits = logits[..., :-1, :]
+    shift_labels = combined_labels[..., 1:]
+    if combined_mask is not None:
+        shift_attention_mask = combined_mask[:, -shift_logits.shape[1] :].to(logits.device)
+        shift_logits = shift_logits[shift_attention_mask != 0].contiguous()
+        shift_labels = shift_labels[shift_attention_mask.to(shift_labels.device) != 0].contiguous()
+    else:
+        shift_logits = shift_logits.contiguous()
+        shift_labels = shift_labels.contiguous()
+    if shift_labels.numel() == 0:
+        return None
+    loss = torch.nn.functional.cross_entropy(
+        shift_logits.view(-1, runtime.model.config.get_text_config().vocab_size),
+        shift_labels.view(-1).to(shift_logits.device),
+    )
+    return loss
+
+
 @torch.no_grad()
 def evaluate_loss(
     runtime: GemmaSoftPromptRuntime,
@@ -122,29 +184,17 @@ def evaluate_loss(
             record,
             max_response_tokens=max_response_tokens,
         )
-        prompt_embeds = runtime.model.get_input_embeddings()(prompt_tensor)
-        input_embeds = runtime.model.get_input_embeddings()(input_ids)
-        soft_prompt = controller(prompt_embeds)
-        combined_embeds, combined_mask = prepend_soft_prompt(
-            inputs_embeds=input_embeds,
-            soft_prompt_embeds=soft_prompt,
+        loss = forward_soft_prompt_loss(
+            runtime,
+            controller,
+            prompt_tensor=prompt_tensor,
+            input_ids=input_ids,
             attention_mask=attention_mask,
+            labels=labels,
         )
-        prefix_labels = torch.full(
-            (labels.shape[0], soft_prompt.shape[1]),
-            -100,
-            device=labels.device,
-            dtype=labels.dtype,
-        )
-        combined_labels = torch.cat([prefix_labels, labels], dim=1)
-        output = runtime.model(
-            inputs_embeds=combined_embeds,
-            attention_mask=combined_mask,
-            labels=combined_labels,
-        )
-        if output.loss is None or not torch.isfinite(output.loss):
+        if loss is None or not torch.isfinite(loss):
             continue
-        total_loss += output.loss.item()
+        total_loss += loss.item()
         finite_examples += 1
     if finite_examples == 0:
         return None
@@ -286,31 +336,19 @@ def train(
                     record,
                     max_response_tokens=max_response_tokens,
                 )
-                prompt_embeds = runtime.model.get_input_embeddings()(prompt_tensor)
-                input_embeds = runtime.model.get_input_embeddings()(input_ids)
-                soft_prompt = controller(prompt_embeds)
-                combined_embeds, combined_mask = prepend_soft_prompt(
-                    inputs_embeds=input_embeds,
-                    soft_prompt_embeds=soft_prompt,
+                loss = forward_soft_prompt_loss(
+                    runtime,
+                    controller,
+                    prompt_tensor=prompt_tensor,
+                    input_ids=input_ids,
                     attention_mask=attention_mask,
+                    labels=labels,
                 )
-                prefix_labels = torch.full(
-                    (labels.shape[0], soft_prompt.shape[1]),
-                    -100,
-                    device=labels.device,
-                    dtype=labels.dtype,
-                )
-                combined_labels = torch.cat([prefix_labels, labels], dim=1)
-                output = runtime.model(
-                    inputs_embeds=combined_embeds,
-                    attention_mask=combined_mask,
-                    labels=combined_labels,
-                )
-                if output.loss is None or not torch.isfinite(output.loss):
+                if loss is None or not torch.isfinite(loss):
                     progress.update(task_id, advance=1, metrics="skipped non-finite")
                     continue
                 optimizer.zero_grad(set_to_none=True)
-                output.loss.backward()
+                loss.backward()
                 torch.nn.utils.clip_grad_norm_(
                     controller.parameters(),
                     max_norm=max_grad_norm,
@@ -324,12 +362,12 @@ def train(
                 )
                 optimizer.step()
                 global_step += 1
-                total_loss += output.loss.item()
+                total_loss += loss.item()
                 finite_examples += 1
                 progress.update(
                     task_id,
                     advance=1,
-                    metrics=f"loss={output.loss.item():.4f} lr={current_lr:.2e}",
+                    metrics=f"loss={loss.item():.4f} lr={current_lr:.2e}",
                 )
 
             avg_loss = total_loss / max(finite_examples, 1)

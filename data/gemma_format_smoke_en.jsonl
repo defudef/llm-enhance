@@ -1,0 +1,60 @@
+{"prompt": "Answer with digits only. What is 12 + 7?", "response": "19"}
+{"prompt": "Answer with digits only. What is 14 + 15?", "response": "29"}
+{"prompt": "Answer with digits only. What is 33 + 9?", "response": "42"}
+{"prompt": "Answer with digits only. What is 48 + 16?", "response": "64"}
+{"prompt": "Answer with digits only. What is 90 - 27?", "response": "63"}
+{"prompt": "Answer with digits only. What is 81 - 19?", "response": "62"}
+{"prompt": "Answer with digits only. What is 144 / 12?", "response": "12"}
+{"prompt": "Answer with digits only. What is 13 * 6?", "response": "78"}
+{"prompt": "Answer with digits only. What is 11 * 11?", "response": "121"}
+{"prompt": "Answer with digits only. What is 7 * 9?", "response": "63"}
+{"prompt": "Answer with digits only. What is 19 + 24?", "response": "43"}
+{"prompt": "Answer with digits only. What is 125 - 48?", "response": "77"}
+{"prompt": "Answer with digits only. What is 18 * 4?", "response": "72"}
+{"prompt": "Answer with digits only. What is 84 / 7?", "response": "12"}
+{"prompt": "Answer with digits only. What is 96 - 18?", "response": "78"}
+{"prompt": "Answer with digits only. What is 17 + 25?", "response": "42"}
+{"prompt": "Answer only yes or no in lowercase. Is 14 an even number?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is 21 less than 19?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is 100 greater than 12?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is 17 divisible by 2?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is Warsaw in Poland?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is the Pacific Ocean smaller than a lake?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is 64 equal to 8 squared?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is 55 a prime number?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is water wet?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is a triangle a four-sided shape?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is 1 greater than 10?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is 0 less than 5?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is Python a snake and a programming language?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is snow usually hot?", "response": "no"}
+{"prompt": "Answer only yes or no in lowercase. Is 3 multiplied by 3 equal to 9?", "response": "yes"}
+{"prompt": "Answer only yes or no in lowercase. Is Friday before Thursday?", "response": "no"}
+{"prompt": "Answer with one lowercase word only. A red round fruit often used in pies.", "response": "apple"}
+{"prompt": "Answer with one lowercase word only. A large animal with a trunk.", "response": "elephant"}
+{"prompt": "Answer with one lowercase word only. The star at the center of our solar system.", "response": "sun"}
+{"prompt": "Answer with one lowercase word only. Frozen water falling from clouds.", "response": "snow"}
+{"prompt": "Answer with one lowercase word only. A vehicle with two wheels powered by pedaling.", "response": "bicycle"}
+{"prompt": "Answer with one lowercase word only. A yellow long fruit peeled before eating.", "response": "banana"}
+{"prompt": "Answer with one lowercase word only. The natural satellite of Earth.", "response": "moon"}
+{"prompt": "Answer with one lowercase word only. A domesticated animal that barks.", "response": "dog"}
+{"prompt": "Answer with one lowercase word only. A color made by mixing blue and yellow.", "response": "green"}
+{"prompt": "Answer with one lowercase word only. The day after Friday.", "response": "saturday"}
+{"prompt": "Answer with one lowercase word only. A flying vehicle used for air travel.", "response": "airplane"}
+{"prompt": "Answer with one lowercase word only. A tool used to write with ink.", "response": "pen"}
+{"prompt": "Answer with one lowercase word only. A planet known for its rings.", "response": "saturn"}
+{"prompt": "Answer with one lowercase word only. The season after summer.", "response": "autumn"}
+{"prompt": "Answer with one lowercase word only. A baby cat.", "response": "kitten"}
+{"prompt": "Answer with one lowercase word only. The opposite of cold.", "response": "hot"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for project status.", "response": "project is healthy"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for server health.", "response": "server looks stable"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for deployment risk.", "response": "risk remains moderate"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for training quality.", "response": "loss is falling"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for benchmark progress.", "response": "benchmark keeps moving"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for team morale.", "response": "team needs coffee"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for feature scope.", "response": "scope feels contained"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for next action.", "response": "run smaller smoke"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for model speed.", "response": "gemma feels quicker"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for controller effect.", "response": "controller changes tone"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for validation trend.", "response": "validation still matters"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for debugging advice.", "response": "read first failure"}

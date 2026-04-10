@@ -59,14 +59,19 @@ class PromptPoolingSoftPromptController(nn.Module):
         prompt_embeds: torch.Tensor,
         attention_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        pooled = self.pool_norm(self.pooled_prompt(prompt_embeds, attention_mask))
+        target_dtype = prompt_embeds.dtype
+        pooled = self.pooled_prompt(prompt_embeds, attention_mask).to(
+            dtype=self.base_soft_prompt.dtype
+        )
+        pooled = self.pool_norm(pooled)
         hidden = self.mlp(pooled)
         delta = self.output_proj(hidden).view(
             prompt_embeds.shape[0],
             self.config.num_virtual_tokens,
             self.config.hidden_size,
         )
-        return self.base_soft_prompt.unsqueeze(0) + delta
+        soft_prompt = self.base_soft_prompt.unsqueeze(0) + delta
+        return soft_prompt.to(dtype=target_dtype)
 
 
 def prepend_soft_prompt(

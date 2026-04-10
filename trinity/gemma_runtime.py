@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import torch
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .dense_controller import (
@@ -124,6 +125,44 @@ def build_training_example(
     return prompt_ids, input_ids, labels
 
 
+def prepend_per_layer_inputs(
+    *,
+    per_layer_inputs: torch.Tensor,
+    prefix_length: int,
+) -> torch.Tensor:
+    if prefix_length <= 0:
+        return per_layer_inputs
+    prefix = torch.zeros(
+        (
+            per_layer_inputs.shape[0],
+            prefix_length,
+            per_layer_inputs.shape[2],
+            per_layer_inputs.shape[3],
+        ),
+        device=per_layer_inputs.device,
+        dtype=per_layer_inputs.dtype,
+    )
+    return torch.cat([prefix, per_layer_inputs], dim=1)
+
+
+def sample_next_token(
+    logits: torch.Tensor,
+    *,
+    temperature: float,
+    top_k: int,
+) -> torch.Tensor:
+    if temperature <= 0:
+        return torch.argmax(logits, dim=-1, keepdim=True)
+    scaled_logits = logits / temperature
+    if top_k > 0:
+        k = min(top_k, scaled_logits.shape[-1])
+        values, _ = torch.topk(scaled_logits, k=k, dim=-1)
+        cutoff = values[..., -1, None]
+        scaled_logits = scaled_logits.masked_fill(scaled_logits < cutoff, float("-inf"))
+    probs = F.softmax(scaled_logits, dim=-1)
+    return torch.multinomial(probs, num_samples=1)
+
+
 class GemmaSoftPromptRuntime:
     def __init__(
         self,
@@ -182,6 +221,54 @@ class GemmaSoftPromptRuntime:
         prompt_embeds = self.model.get_input_embeddings()(input_ids)
         return input_ids, attention_mask, prompt_embeds, prompt_text
 
+    def build_per_layer_inputs(self, input_ids: torch.Tensor) -> torch.Tensor:
+        return self.model.model.language_model.get_per_layer_inputs(input_ids, None)
+
+    def compute_logits(
+        self,
+        *,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        controller: PromptPoolingSoftPromptController | None,
+        prompt_embeds: torch.Tensor,
+        prompt_attention_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        language_model = self.model.model.language_model
+        if controller is None:
+            outputs = language_model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                use_cache=False,
+                return_dict=True,
+            )
+        else:
+            soft_prompt = controller(prompt_embeds, prompt_attention_mask)
+            input_embeds = self.model.get_input_embeddings()(input_ids)
+            combined_embeds, combined_mask = prepend_soft_prompt(
+                inputs_embeds=input_embeds,
+                soft_prompt_embeds=soft_prompt,
+                attention_mask=attention_mask,
+            )
+            combined_per_layer_inputs = prepend_per_layer_inputs(
+                per_layer_inputs=self.build_per_layer_inputs(input_ids),
+                prefix_length=soft_prompt.shape[1],
+            )
+            outputs = language_model(
+                inputs_embeds=combined_embeds,
+                attention_mask=combined_mask,
+                per_layer_inputs=combined_per_layer_inputs,
+                use_cache=False,
+                return_dict=True,
+            )
+        hidden_states = outputs.last_hidden_state
+        logits = self.model.lm_head(hidden_states[:, -1:, :]).squeeze(1)
+        final_logit_softcapping = self.model.config.get_text_config().final_logit_softcapping
+        if final_logit_softcapping is not None:
+            logits = logits / final_logit_softcapping
+            logits = torch.tanh(logits)
+            logits = logits * final_logit_softcapping
+        return logits
+
     @torch.inference_mode()
     def generate(
         self,
@@ -197,32 +284,34 @@ class GemmaSoftPromptRuntime:
             prompt=prompt,
             system_prompt=system_prompt,
         )
+        prompt_attention_mask = attention_mask.clone()
+        generated_tokens: list[int] = []
+        eos_token_id = self.tokenizer.eos_token_id
 
-        model_kwargs: dict[str, torch.Tensor | bool | float | int] = {
-            "attention_mask": attention_mask,
-            "max_new_tokens": max_new_tokens,
-            "do_sample": temperature > 0,
-            "temperature": temperature if temperature > 0 else 1.0,
-            "top_k": top_k,
-            "pad_token_id": self.tokenizer.eos_token_id,
-            "eos_token_id": self.tokenizer.eos_token_id,
-        }
-
-        input_length = input_ids.shape[1]
-        if controller is not None:
-            soft_prompt = controller(prompt_embeds, attention_mask)
-            combined_embeds, combined_mask = prepend_soft_prompt(
-                inputs_embeds=prompt_embeds,
-                soft_prompt_embeds=soft_prompt,
+        for _ in range(max_new_tokens):
+            logits = self.compute_logits(
+                input_ids=input_ids,
                 attention_mask=attention_mask,
+                controller=controller,
+                prompt_embeds=prompt_embeds,
+                prompt_attention_mask=prompt_attention_mask,
             )
-            model_kwargs["inputs_embeds"] = combined_embeds
-            if combined_mask is not None:
-                model_kwargs["attention_mask"] = combined_mask
-            input_length = combined_embeds.shape[1]
-        else:
-            model_kwargs["input_ids"] = input_ids
+            next_token = sample_next_token(
+                logits,
+                temperature=temperature,
+                top_k=top_k,
+            )
+            token_id = int(next_token.item())
+            if eos_token_id is not None and token_id == eos_token_id:
+                break
+            generated_tokens.append(token_id)
+            next_token = next_token.to(device=input_ids.device, dtype=input_ids.dtype)
+            input_ids = torch.cat([input_ids, next_token], dim=1)
+            next_mask = torch.ones(
+                (attention_mask.shape[0], 1),
+                device=attention_mask.device,
+                dtype=attention_mask.dtype,
+            )
+            attention_mask = torch.cat([attention_mask, next_mask], dim=1)
 
-        output_ids = self.model.generate(**model_kwargs)
-        generated_ids = output_ids[0, input_length:]
-        return self.tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+        return self.tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()

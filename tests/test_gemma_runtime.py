@@ -2,9 +2,16 @@ import sys
 import unittest
 from pathlib import Path
 
+import torch
+
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from trinity.gemma_runtime import build_messages, build_training_example  # noqa: E402
+from trinity.gemma_runtime import (  # noqa: E402
+    build_messages,
+    build_training_example,
+    prepend_per_layer_inputs,
+    sample_next_token,
+)
 
 
 class FakeTokenizer:
@@ -66,6 +73,25 @@ class GemmaRuntimeTests(unittest.TestCase):
 
         non_ignored = [value for value in labels if value != -100]
         self.assertEqual(len(non_ignored), 3)
+
+    def test_prepend_per_layer_inputs_adds_zero_prefix(self) -> None:
+        per_layer_inputs = torch.arange(1 * 3 * 2 * 4, dtype=torch.float16).view(1, 3, 2, 4)
+
+        combined = prepend_per_layer_inputs(
+            per_layer_inputs=per_layer_inputs,
+            prefix_length=2,
+        )
+
+        self.assertEqual(tuple(combined.shape), (1, 5, 2, 4))
+        self.assertTrue(torch.equal(combined[:, :2], torch.zeros(1, 2, 2, 4, dtype=torch.float16)))
+        self.assertTrue(torch.equal(combined[:, 2:], per_layer_inputs))
+
+    def test_sample_next_token_greedy_returns_argmax(self) -> None:
+        logits = torch.tensor([[1.0, 3.0, 2.0]])
+
+        token = sample_next_token(logits, temperature=0.0, top_k=0)
+
+        self.assertEqual(int(token.item()), 1)
 
 
 if __name__ == "__main__":
