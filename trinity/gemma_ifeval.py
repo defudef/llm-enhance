@@ -33,14 +33,21 @@ def status(message: str) -> None:
 
 
 def ensure_nltk_punkt() -> None:
-    try:
-        nltk.data.find("tokenizers/punkt")
-    except LookupError:
-        status("Downloading NLTK punkt tokenizer required by IFEval...")
-        if not nltk.download("punkt", quiet=True):
-            raise RuntimeError(
-                "Failed to download NLTK punkt tokenizer required by IFEval."
+    resources = [
+        ("tokenizers/punkt", "punkt"),
+        ("tokenizers/punkt_tab/english", "punkt_tab"),
+    ]
+    for resource_path, resource_name in resources:
+        try:
+            nltk.data.find(resource_path)
+        except LookupError:
+            status(
+                f"Downloading NLTK resource '{resource_name}' required by IFEval..."
             )
+            if not nltk.download(resource_name, quiet=True):
+                raise RuntimeError(
+                    f"Failed to download NLTK resource '{resource_name}' required by IFEval."
+                )
 
 
 @app.command()
