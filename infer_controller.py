@@ -117,6 +117,12 @@ def infer(
         bool, typer.Option(help="Treat prompt as already formatted for the model.")
     ] = False,
 ) -> None:
+    if not controller_checkpoint.exists():
+        raise typer.BadParameter(
+            f"Controller checkpoint not found at {controller_checkpoint}. "
+            "Train one first or pass --controller-checkpoint."
+        )
+
     device_obj = resolve_device(device)
     param_dtype = resolve_dtype(dtype, device_obj)
 

@@ -82,6 +82,10 @@ def format_epoch_summary(
     return " ".join(parts)
 
 
+def select_best_metric(*, train_loss: float, val_loss: float | None) -> float:
+    return train_loss if val_loss is None else val_loss
+
+
 def resolve_device(name: str) -> torch.device:
     if name == "auto":
         if torch.cuda.is_available():
@@ -363,6 +367,10 @@ def train(
         ),
     ] = 1,
 ) -> None:
+    if epochs <= 0:
+        raise typer.BadParameter("--epochs must be greater than 0.")
+    if grad_accum_steps <= 0:
+        raise typer.BadParameter("--grad-accum-steps must be greater than 0.")
     if max_response_tokens is not None and max_response_tokens <= 0:
         raise typer.BadParameter("--max-response-tokens must be greater than 0.")
     if eval_every < 0:
@@ -641,14 +649,9 @@ def train(
                 epoch=epoch + 1,
                 metrics=checkpoint_metrics,
             )
-            metric: float | None
-            if val_dataset:
-                metric = val_loss
-            else:
-                metric = avg_loss
+            metric = select_best_metric(train_loss=avg_loss, val_loss=val_loss)
             if (
                 best_output_path is not None
-                and metric is not None
                 and (best_metric is None or metric < best_metric)
             ):
                 best_metric = metric
