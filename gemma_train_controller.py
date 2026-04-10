@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import math
 import random
+from collections import defaultdict
 from pathlib import Path
 from typing import Annotated
 
@@ -48,11 +50,29 @@ def split_train_val(
 ) -> tuple[list[dict], list[dict]]:
     if val_split <= 0 or len(records) < 2:
         return records, []
-    shuffled = list(records)
-    random.Random(seed).shuffle(shuffled)
-    val_count = max(1, int(round(len(shuffled) * val_split)))
-    val_count = min(val_count, len(shuffled) - 1)
-    return shuffled[val_count:], shuffled[:val_count]
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for record in records:
+        grouped[str(record.get("category", "default"))].append(record)
+
+    rng = random.Random(seed)
+    train_records: list[dict] = []
+    val_records: list[dict] = []
+    for category in sorted(grouped):
+        items = list(grouped[category])
+        rng.shuffle(items)
+        if len(items) < 2:
+            train_records.extend(items)
+            continue
+        val_count = int(round(len(items) * val_split))
+        if val_count <= 0:
+            val_count = 1
+        val_count = min(val_count, len(items) - 1)
+        val_records.extend(items[:val_count])
+        train_records.extend(items[val_count:])
+
+    rng.shuffle(train_records)
+    rng.shuffle(val_records)
+    return train_records, val_records
 
 
 def format_epoch_summary(
@@ -74,11 +94,20 @@ def set_optimizer_lr(
     base_lr: float,
     global_step: int,
     warmup_steps: int,
+    total_steps: int,
+    min_lr_ratio: float,
 ) -> float:
-    if warmup_steps <= 0:
-        lr = base_lr
+    step_index = global_step + 1
+    if warmup_steps > 0 and step_index <= warmup_steps:
+        lr = base_lr * (step_index / warmup_steps)
     else:
-        lr = base_lr * min(1.0, (global_step + 1) / warmup_steps)
+        if total_steps <= warmup_steps:
+            progress = 1.0
+        else:
+            progress = (step_index - warmup_steps) / max(total_steps - warmup_steps, 1)
+        progress = min(max(progress, 0.0), 1.0)
+        cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+        lr = base_lr * (min_lr_ratio + (1.0 - min_lr_ratio) * cosine)
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
     return lr
@@ -238,19 +267,25 @@ def train(
     ] = 8,
     controller_dim: Annotated[
         int, typer.Option(help="Latent dimension inside the controller.")
-    ] = 256,
+    ] = 128,
     controller_hidden_dim: Annotated[
         int, typer.Option(help="Hidden size of the controller MLP.")
-    ] = 1024,
+    ] = 512,
+    controller_dropout: Annotated[
+        float, typer.Option(help="Dropout inside the controller MLP.")
+    ] = 0.05,
     epochs: Annotated[
         int, typer.Option(help="Number of full passes over the dataset.")
-    ] = 1,
+    ] = 5,
     learning_rate: Annotated[
         float, typer.Option(help="AdamW learning rate for the controller.")
-    ] = 1e-4,
+    ] = 2e-4,
     warmup_steps: Annotated[
         int, typer.Option(help="Linear learning-rate warmup over optimizer steps.")
-    ] = 20,
+    ] = 24,
+    min_lr_ratio: Annotated[
+        float, typer.Option(help="Minimum learning-rate ratio reached after cosine decay.")
+    ] = 0.1,
     weight_decay: Annotated[
         float, typer.Option(help="AdamW weight decay.")
     ] = 0.01,
@@ -270,9 +305,19 @@ def train(
         int | None,
         typer.Option(help="Optional cap on response tokens used for loss/training."),
     ] = None,
+    patience: Annotated[
+        int, typer.Option(help="Early stopping patience in epochs without validation improvement. Use 0 to disable.")
+    ] = 2,
+    min_improvement: Annotated[
+        float, typer.Option(help="Minimum validation improvement required to reset patience.")
+    ] = 1e-3,
 ) -> None:
     if epochs <= 0:
         raise typer.BadParameter("--epochs must be greater than 0.")
+    if not 0.0 <= controller_dropout < 1.0:
+        raise typer.BadParameter("--controller-dropout must be in [0, 1).")
+    if not 0.0 <= min_lr_ratio <= 1.0:
+        raise typer.BadParameter("--min-lr-ratio must be in [0, 1].")
     dataset = load_jsonl(dataset_path)
     if max_examples is not None:
         dataset = dataset[:max_examples]
@@ -299,6 +344,7 @@ def train(
             num_virtual_tokens=num_virtual_tokens,
             controller_dim=controller_dim,
             hidden_dim=controller_hidden_dim,
+            dropout=controller_dropout,
         )
     ).to(device=runtime.device, dtype=torch.float32)
     optimizer = AdamW(
@@ -310,6 +356,9 @@ def train(
     global_step = 0
     current_lr = 0.0
     best_metric: float | None = None
+    best_epoch: int | None = None
+    epochs_without_improvement = 0
+    total_steps = max(len(train_dataset) * epochs, 1)
     progress = Progress(
         SpinnerColumn(),
         TextColumn("[bold blue]{task.description}"),
@@ -323,14 +372,16 @@ def train(
 
     with progress:
         for epoch in range(epochs):
+            epoch_train_dataset = list(train_dataset)
+            random.Random(seed + epoch).shuffle(epoch_train_dataset)
             total_loss = 0.0
             finite_examples = 0
             task_id = progress.add_task(
                 f"epoch {epoch + 1}/{epochs}",
-                total=len(train_dataset),
+                total=len(epoch_train_dataset),
                 metrics="starting",
             )
-            for record in train_dataset:
+            for record in epoch_train_dataset:
                 prompt_tensor, input_ids, attention_mask, labels = build_tensors(
                     runtime,
                     record,
@@ -359,6 +410,8 @@ def train(
                     base_lr=learning_rate,
                     global_step=global_step,
                     warmup_steps=warmup_steps,
+                    total_steps=total_steps,
+                    min_lr_ratio=min_lr_ratio,
                 )
                 optimizer.step()
                 global_step += 1
@@ -391,6 +444,7 @@ def train(
                 "val_loss": val_loss,
                 "lr": current_lr,
                 "finite_examples": finite_examples,
+                "best_metric_so_far": best_metric,
             }
             save_gemma_controller_checkpoint(
                 output_path,
@@ -402,9 +456,11 @@ def train(
             )
             if (
                 best_output_path is not None
-                and (best_metric is None or metric < best_metric)
+                and (best_metric is None or metric < best_metric - min_improvement)
             ):
                 best_metric = metric
+                best_epoch = epoch + 1
+                epochs_without_improvement = 0
                 save_gemma_controller_checkpoint(
                     best_output_path,
                     controller,
@@ -413,10 +469,33 @@ def train(
                     epoch=epoch + 1,
                     metrics=checkpoint_metrics,
                 )
+            else:
+                epochs_without_improvement += 1
+
+            if best_epoch is not None:
+                progress.console.print(
+                    f"best so far: epoch {best_epoch} metric={best_metric:.4f}",
+                    style="cyan",
+                )
+
+            if (
+                patience > 0
+                and val_loss is not None
+                and epochs_without_improvement >= patience
+            ):
+                status(
+                    "Early stopping triggered after "
+                    f"{epochs_without_improvement} epochs without validation improvement."
+                )
+                break
 
     status(f"Saved Gemma controller checkpoint to {output_path}")
     if best_output_path is not None and best_metric is not None:
-        status(f"Best Gemma controller checkpoint: {best_output_path} metric={best_metric:.4f}")
+        best_epoch_suffix = "" if best_epoch is None else f" epoch={best_epoch}"
+        status(
+            f"Best Gemma controller checkpoint: {best_output_path} "
+            f"metric={best_metric:.4f}{best_epoch_suffix}"
+        )
 
 
 if __name__ == "__main__":
