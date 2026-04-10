@@ -64,8 +64,10 @@ W repo jest też MVP osobnego controllera, który steruje routerem MoE bez modyf
 Trening:
 
 ```bash
-uv run python train_controller.py data/train.jsonl --offline --epochs 1
+uv run python train_controller.py --offline --epochs 1
 ```
+
+Domyślny dataset treningowy to `data/sarcastic_en.jsonl`. Inny dataset możesz nadal podać jako argument pozycyjny, np. `uv run python train_controller.py data/smoke.jsonl --offline`.
 
 Format `JSONL`:
 
@@ -74,12 +76,40 @@ Format `JSONL`:
 {"prompt":"Zaplanuj prosty weekend w Krakowie","response":"Sobota: ..."}
 ```
 
+Przykładowy dataset sarkastyczny po angielsku jest w `data/sarcastic_en.jsonl`:
+
+```bash
+uv run python train_controller.py \
+  --offline \
+  --epochs 1 \
+  --output-path artifacts/controller-sarcastic-pl-last.pt \
+  --best-output-path artifacts/controller-sarcastic-pl-best.pt
+```
+
+Przy takim otwartym, stylistycznym dataspecie `val_loss` jest bardziej użyteczny niż exact-match, bo wiele sarkastycznych odpowiedzi może być poprawnych.
+`--output-path` zapisuje ostatnią zakończoną epokę, a `--best-output-path` tylko najlepszą metrykę walidacyjną.
+
+Szybsza pętla eksperymentalna:
+
+```bash
+uv run python train_controller.py \
+  --offline \
+  --epochs 10 \
+  --dtype float16 \
+  --controller-bias-scale 0.2 \
+  --learning-rate 1e-5 \
+  --router-bias-l2 0 \
+  --max-response-tokens 48 \
+  --eval-every 3
+```
+
+`--dtype float16` przyspiesza bazowy model na MPS, `--max-response-tokens` skraca targety treningowe, a `--eval-every` ogranicza koszt walidacji. Jeśli wrócą NaNy, wróć z `--dtype float16` do domyślnego `float32`.
+
 Inference z wytrenowanym controllerem:
 
 ```bash
 uv run python infer_controller.py \
   "Ile to 17 * 19?" \
-  --controller-checkpoint artifacts/controller.pt \
   --controller-strength 0.2 \
   --offline
 ```
@@ -99,7 +129,7 @@ Ewaluacja `base vs controller`:
 ```bash
 uv run python eval_controller.py data/smoke.jsonl --offline
 uv run python eval_controller.py data/smoke.jsonl \
-  --controller-checkpoint artifacts/controller.pt \
+  --controller-checkpoint artifacts/controller-best.pt \
   --offline \
   --results-path artifacts/eval.jsonl
 ```

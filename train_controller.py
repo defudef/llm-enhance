@@ -7,6 +7,16 @@ from typing import Annotated
 
 import torch
 import typer
+from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 from torch.optim import AdamW
 
 from trinity import AfmoeConfig, AfmoeForCausalLM, AfmoeTokenizer
@@ -18,10 +28,58 @@ from trinity.controller import (
 from trinity.wrapper import TrinityWithController
 
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
+console = Console(stderr=True)
 
 
 def status(message: str) -> None:
     typer.secho(message, err=True, fg=typer.colors.BLUE)
+
+
+def format_train_metrics(
+    *,
+    train_loss: float | None,
+    bias_l2: float | None,
+    lr: float,
+    skipped_steps: int,
+) -> str:
+    parts: list[str] = []
+    if train_loss is not None:
+        parts.append(f"loss={train_loss:.4f}")
+    if bias_l2 is not None:
+        parts.append(f"bias={bias_l2:.2e}")
+    parts.append(f"lr={lr:.2e}")
+    if skipped_steps:
+        parts.append(f"skip={skipped_steps}")
+    return " ".join(parts)
+
+
+def format_epoch_summary(
+    *,
+    train_loss: float,
+    train_bias_l2: float,
+    val_loss: float | None,
+    val_bias_l2: float | None,
+    lr: float,
+    finite_examples: int,
+    skipped_steps: int,
+) -> str:
+    parts = [
+        f"train={train_loss:.4f}",
+        f"bias={train_bias_l2:.2e}",
+    ]
+    if val_loss is None or val_bias_l2 is None:
+        parts.append("val=n/a")
+    else:
+        parts.append(f"val={val_loss:.4f}")
+        parts.append(f"val_bias={val_bias_l2:.2e}")
+    parts.extend(
+        [
+            f"lr={lr:.2e}",
+            f"finite={finite_examples}",
+            f"skipped={skipped_steps}",
+        ]
+    )
+    return " ".join(parts)
 
 
 def resolve_device(name: str) -> torch.device:
@@ -82,10 +140,13 @@ def build_training_example(
     response: str,
     system_prompt: str | None,
     eos_token_id: int | None,
+    max_response_tokens: int | None,
 ) -> tuple[list[int], list[int], list[int]]:
     prompt_text = tokenizer.apply_chat_template(prompt, system_prompt=system_prompt)
     prompt_ids = tokenizer.encode(prompt_text)
     response_ids = tokenizer.encode(response)
+    if max_response_tokens is not None:
+        response_ids = response_ids[:max_response_tokens]
     if eos_token_id is not None:
         response_ids = [*response_ids, eos_token_id]
     full_ids = [*prompt_ids, *response_ids]
@@ -103,6 +164,9 @@ def save_controller_checkpoint(
     controller: PromptPoolingController,
     optimizer: AdamW,
     step: int,
+    *,
+    epoch: int,
+    metrics: dict,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
@@ -111,6 +175,8 @@ def save_controller_checkpoint(
             "controller_state_dict": controller.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "step": step,
+            "epoch": epoch,
+            "metrics": metrics,
         },
         path,
     )
@@ -138,6 +204,7 @@ def build_tensors(
     *,
     eos_token_id: int | None,
     device: torch.device,
+    max_response_tokens: int | None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     prompt_ids, model_input_ids, labels = build_training_example(
         tokenizer,
@@ -145,6 +212,7 @@ def build_tensors(
         response=record["response"],
         system_prompt=record.get("system_prompt"),
         eos_token_id=eos_token_id,
+        max_response_tokens=max_response_tokens,
     )
     controller_input_ids = torch.tensor([prompt_ids], device=device, dtype=torch.long)
     input_ids = torch.tensor([model_input_ids], device=device, dtype=torch.long)
@@ -161,6 +229,7 @@ def evaluate_loss(
     eos_token_id: int | None,
     device: torch.device,
     router_bias_l2: float,
+    max_response_tokens: int | None,
 ) -> tuple[float | None, float | None]:
     if not dataset:
         return None, None
@@ -177,6 +246,7 @@ def evaluate_loss(
             record,
             eos_token_id=eos_token_id,
             device=device,
+            max_response_tokens=max_response_tokens,
         )
         output = model(
             input_ids,
@@ -205,12 +275,20 @@ def evaluate_loss(
 def train(
     dataset_path: Annotated[
         Path,
-        typer.Argument(help="JSONL dataset with prompt and response fields."),
-    ],
+        typer.Argument(
+            help="JSONL dataset with prompt and response fields.",
+        ),
+    ] = Path("data/sarcastic_en.jsonl"),
     output_path: Annotated[
         Path,
-        typer.Option(help="Where to save the trained controller checkpoint."),
+        typer.Option(help="Where to save the latest controller checkpoint."),
     ] = Path("artifacts/controller.pt"),
+    best_output_path: Annotated[
+        Path | None,
+        typer.Option(
+            help="Optional checkpoint path updated only when validation/train metric improves."
+        ),
+    ] = Path("artifacts/controller-best.pt"),
     repo_id: Annotated[
         str, typer.Option(help="Base Trinity repo on Hugging Face.")
     ] = "arcee-ai/Trinity-Nano-Preview",
@@ -274,7 +352,22 @@ def train(
     max_examples: Annotated[
         int | None, typer.Option(help="Optional limit for quick smoke runs.")
     ] = None,
+    max_response_tokens: Annotated[
+        int | None,
+        typer.Option(help="Optional cap on response tokens used for loss/training."),
+    ] = None,
+    eval_every: Annotated[
+        int,
+        typer.Option(
+            help="Run validation every N epochs. Use 0 to skip validation during training."
+        ),
+    ] = 1,
 ) -> None:
+    if max_response_tokens is not None and max_response_tokens <= 0:
+        raise typer.BadParameter("--max-response-tokens must be greater than 0.")
+    if eval_every < 0:
+        raise typer.BadParameter("--eval-every must be >= 0.")
+
     dataset = load_jsonl(dataset_path)
     if max_examples is not None:
         dataset = dataset[:max_examples]
@@ -330,117 +423,251 @@ def train(
     global_step = 0
     skipped_steps = 0
     current_lr = 0.0
+    best_metric: float | None = None
     status(
         f"Training on {len(train_dataset)} example(s), validating on {len(val_dataset)} example(s)..."
     )
-    for epoch in range(epochs):
-        total_loss = 0.0
-        total_bias_l2 = 0.0
-        finite_examples = 0
-        optimizer.zero_grad(set_to_none=True)
-        for example_idx, record in enumerate(train_dataset, start=1):
-            controller_input_ids, input_ids, label_tensor = build_tensors(
-                tokenizer,
-                eos_token_id=eos_token_id,
-                device=device_obj,
-                record=record,
+    progress = Progress(
+        SpinnerColumn(),
+        TextColumn("[bold blue]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+        TextColumn("{task.fields[metrics]}"),
+        console=console,
+    )
+    with progress:
+        for epoch in range(epochs):
+            total_loss = 0.0
+            total_bias_l2 = 0.0
+            finite_examples = 0
+            last_train_loss: float | None = None
+            last_bias_l2: float | None = None
+            epoch_skipped_start = skipped_steps
+            optimizer.zero_grad(set_to_none=True)
+            task_id = progress.add_task(
+                f"epoch {epoch + 1}/{epochs}",
+                total=len(train_dataset),
+                metrics=format_train_metrics(
+                    train_loss=None,
+                    bias_l2=None,
+                    lr=current_lr,
+                    skipped_steps=0,
+                ),
             )
-
-            output = model(
-                input_ids,
-                controller_input_ids=controller_input_ids,
-                labels=label_tensor,
-            )
-            if output.loss is None:
-                raise RuntimeError("Expected a loss value during controller training.")
-            if output.controller_router_biases is None:
-                raise RuntimeError("Expected controller router biases during training.")
-
-            bias_penalty = output.controller_router_biases.pow(2).mean()
-            train_loss = output.loss + router_bias_l2 * bias_penalty
-            if not torch.isfinite(train_loss):
-                skipped_steps += 1
-                optimizer.zero_grad(set_to_none=True)
-                status(
-                    f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(dataset)} skipped non-finite loss={train_loss.item()}"
+            for example_idx, record in enumerate(train_dataset, start=1):
+                controller_input_ids, input_ids, label_tensor = build_tensors(
+                    tokenizer,
+                    eos_token_id=eos_token_id,
+                    device=device_obj,
+                    record=record,
+                    max_response_tokens=max_response_tokens,
                 )
-                continue
 
-            loss = train_loss / grad_accum_steps
-            loss.backward()
-            total_loss += output.loss.item()
-            total_bias_l2 += bias_penalty.item()
-            finite_examples += 1
-
-            if example_idx % grad_accum_steps == 0:
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    model.controller.parameters(),
-                    max_norm=max_grad_norm,
-                    error_if_nonfinite=False,
+                output = model(
+                    input_ids,
+                    controller_input_ids=controller_input_ids,
+                    labels=label_tensor,
                 )
-                if not torch.isfinite(grad_norm):
+                if output.loss is None:
+                    raise RuntimeError("Expected a loss value during controller training.")
+                if output.controller_router_biases is None:
+                    raise RuntimeError("Expected controller router biases during training.")
+
+                bias_penalty = output.controller_router_biases.pow(2).mean()
+                train_loss = output.loss + router_bias_l2 * bias_penalty
+                if not torch.isfinite(train_loss):
                     skipped_steps += 1
                     optimizer.zero_grad(set_to_none=True)
-                    status(
-                        f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}"
+                    progress.console.print(
+                        f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite loss={train_loss.item()}",
+                        style="yellow",
+                    )
+                    progress.update(
+                        task_id,
+                        advance=1,
+                        metrics=format_train_metrics(
+                            train_loss=last_train_loss,
+                            bias_l2=last_bias_l2,
+                            lr=current_lr,
+                            skipped_steps=skipped_steps - epoch_skipped_start,
+                        ),
                     )
                     continue
-                current_lr = set_optimizer_lr(
-                    optimizer,
-                    base_lr=learning_rate,
-                    global_step=global_step,
-                    warmup_steps=warmup_steps,
-                )
-                optimizer.step()
-                optimizer.zero_grad(set_to_none=True)
-                global_step += 1
 
-            if example_idx == len(train_dataset) and example_idx % grad_accum_steps != 0:
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    model.controller.parameters(),
-                    max_norm=max_grad_norm,
-                    error_if_nonfinite=False,
-                )
-                if not torch.isfinite(grad_norm):
-                    skipped_steps += 1
+                loss = train_loss / grad_accum_steps
+                loss.backward()
+                total_loss += output.loss.item()
+                total_bias_l2 += bias_penalty.item()
+                finite_examples += 1
+                last_train_loss = output.loss.item()
+                last_bias_l2 = bias_penalty.item()
+
+                if example_idx % grad_accum_steps == 0:
+                    grad_norm = torch.nn.utils.clip_grad_norm_(
+                        model.controller.parameters(),
+                        max_norm=max_grad_norm,
+                        error_if_nonfinite=False,
+                    )
+                    if not torch.isfinite(grad_norm):
+                        skipped_steps += 1
+                        optimizer.zero_grad(set_to_none=True)
+                        progress.console.print(
+                            f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}",
+                            style="yellow",
+                        )
+                        progress.update(
+                            task_id,
+                            advance=1,
+                            metrics=format_train_metrics(
+                                train_loss=last_train_loss,
+                                bias_l2=last_bias_l2,
+                                lr=current_lr,
+                                skipped_steps=skipped_steps - epoch_skipped_start,
+                            ),
+                        )
+                        continue
+                    current_lr = set_optimizer_lr(
+                        optimizer,
+                        base_lr=learning_rate,
+                        global_step=global_step,
+                        warmup_steps=warmup_steps,
+                    )
+                    optimizer.step()
                     optimizer.zero_grad(set_to_none=True)
-                    status(
-                        f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}"
+                    global_step += 1
+
+                if (
+                    example_idx == len(train_dataset)
+                    and example_idx % grad_accum_steps != 0
+                ):
+                    grad_norm = torch.nn.utils.clip_grad_norm_(
+                        model.controller.parameters(),
+                        max_norm=max_grad_norm,
+                        error_if_nonfinite=False,
                     )
-                    continue
-                current_lr = set_optimizer_lr(
-                    optimizer,
-                    base_lr=learning_rate,
-                    global_step=global_step,
-                    warmup_steps=warmup_steps,
+                    if not torch.isfinite(grad_norm):
+                        skipped_steps += 1
+                        optimizer.zero_grad(set_to_none=True)
+                        progress.console.print(
+                            f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} skipped non-finite grad_norm={grad_norm.item()}",
+                            style="yellow",
+                        )
+                        progress.update(
+                            task_id,
+                            advance=1,
+                            metrics=format_train_metrics(
+                                train_loss=last_train_loss,
+                                bias_l2=last_bias_l2,
+                                lr=current_lr,
+                                skipped_steps=skipped_steps - epoch_skipped_start,
+                            ),
+                        )
+                        continue
+                    current_lr = set_optimizer_lr(
+                        optimizer,
+                        base_lr=learning_rate,
+                        global_step=global_step,
+                        warmup_steps=warmup_steps,
+                    )
+                    optimizer.step()
+                    optimizer.zero_grad(set_to_none=True)
+                    global_step += 1
+
+                progress.update(
+                    task_id,
+                    advance=1,
+                    metrics=format_train_metrics(
+                        train_loss=last_train_loss,
+                        bias_l2=last_bias_l2,
+                        lr=current_lr,
+                        skipped_steps=skipped_steps - epoch_skipped_start,
+                    ),
                 )
-                optimizer.step()
-                optimizer.zero_grad(set_to_none=True)
-                global_step += 1
 
-            status(
-                f"epoch {epoch + 1}/{epochs} example {example_idx}/{len(train_dataset)} train_loss={output.loss.item():.4f} bias_l2={bias_penalty.item():.6f} lr={current_lr:.2e}"
+            avg_loss = total_loss / max(finite_examples, 1)
+            avg_bias_l2 = total_bias_l2 / max(finite_examples, 1)
+            should_validate = bool(val_dataset) and eval_every > 0 and (
+                (epoch + 1) % eval_every == 0 or epoch + 1 == epochs
             )
-
-        avg_loss = total_loss / max(finite_examples, 1)
-        avg_bias_l2 = total_bias_l2 / max(finite_examples, 1)
-        val_loss, val_bias_l2 = evaluate_loss(
-            model,
-            tokenizer,
-            val_dataset,
-            eos_token_id=eos_token_id,
-            device=device_obj,
-            router_bias_l2=router_bias_l2,
-        )
-        val_msg = "val_loss=n/a"
-        if val_loss is not None and val_bias_l2 is not None:
-            val_msg = f"val_loss={val_loss:.4f} val_bias_l2={val_bias_l2:.6f}"
-        status(
-            f"epoch {epoch + 1} train_loss={avg_loss:.4f} train_bias_l2={avg_bias_l2:.6f} {val_msg} lr={current_lr:.2e} finite_examples={finite_examples} skipped_steps={skipped_steps}"
-        )
-        save_controller_checkpoint(output_path, model.controller, optimizer, global_step)
+            if should_validate:
+                progress.update(
+                    task_id,
+                    description=f"epoch {epoch + 1}/{epochs} validating",
+                    metrics="running validation...",
+                )
+                val_loss, val_bias_l2 = evaluate_loss(
+                    model,
+                    tokenizer,
+                    val_dataset,
+                    eos_token_id=eos_token_id,
+                    device=device_obj,
+                    router_bias_l2=router_bias_l2,
+                    max_response_tokens=max_response_tokens,
+                )
+            else:
+                val_loss = None
+                val_bias_l2 = None
+            summary = format_epoch_summary(
+                train_loss=avg_loss,
+                train_bias_l2=avg_bias_l2,
+                val_loss=val_loss,
+                val_bias_l2=val_bias_l2,
+                lr=current_lr,
+                finite_examples=finite_examples,
+                skipped_steps=skipped_steps,
+            )
+            progress.update(
+                task_id,
+                description=f"epoch {epoch + 1}/{epochs}",
+                metrics="done",
+            )
+            progress.console.print(f"epoch {epoch + 1} {summary}", style="green")
+            checkpoint_metrics = {
+                "train_loss": avg_loss,
+                "train_bias_l2": avg_bias_l2,
+                "val_loss": val_loss,
+                "val_bias_l2": val_bias_l2,
+                "lr": current_lr,
+                "finite_examples": finite_examples,
+                "skipped_steps": skipped_steps,
+            }
+            save_controller_checkpoint(
+                output_path,
+                model.controller,
+                optimizer,
+                global_step,
+                epoch=epoch + 1,
+                metrics=checkpoint_metrics,
+            )
+            metric: float | None
+            if val_dataset:
+                metric = val_loss
+            else:
+                metric = avg_loss
+            if (
+                best_output_path is not None
+                and metric is not None
+                and (best_metric is None or metric < best_metric)
+            ):
+                best_metric = metric
+                save_controller_checkpoint(
+                    best_output_path,
+                    model.controller,
+                    optimizer,
+                    global_step,
+                    epoch=epoch + 1,
+                    metrics=checkpoint_metrics,
+                )
+                progress.console.print(
+                    f"saved best checkpoint to {best_output_path} metric={metric:.4f}",
+                    style="cyan",
+                )
 
     status(f"Saved controller checkpoint to {output_path}")
+    if best_output_path is not None and best_metric is not None:
+        status(f"Best controller checkpoint: {best_output_path} metric={best_metric:.4f}")
 
 
 if __name__ == "__main__":

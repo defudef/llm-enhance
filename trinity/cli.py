@@ -100,7 +100,7 @@ def infer(
         bool,
         typer.Option(
             "--with-controller",
-            help="Enable the router controller checkpoint from artifacts/controller.pt.",
+            help="Enable the router controller checkpoint from artifacts/controller-best.pt.",
         ),
     ] = False,
     controller_checkpoint: Annotated[
@@ -108,7 +108,7 @@ def infer(
         typer.Option(
             help="Optional controller checkpoint path. Used only with --with-controller."
         ),
-    ] = Path("artifacts/controller.pt"),
+    ] = Path("artifacts/controller-best.pt"),
     controller_strength: Annotated[
         float,
         typer.Option(

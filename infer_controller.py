@@ -76,7 +76,7 @@ def infer(
     prompt: Annotated[str, typer.Argument(help="User prompt to run through the controller-enhanced model.")],
     controller_checkpoint: Annotated[
         Path, typer.Option(help="Path to a saved controller checkpoint.")
-    ],
+    ] = Path("artifacts/controller-best.pt"),
     repo_id: Annotated[
         str, typer.Option(help="Base Trinity repo on Hugging Face.")
     ] = "arcee-ai/Trinity-Nano-Preview",
