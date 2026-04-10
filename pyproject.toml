@@ -5,7 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "absl-py>=2.0.0",
     "huggingface-hub>=0.34.0",
+    "immutabledict>=4.2.0",
+    "langdetect>=1.0.9",
+    "nltk>=3.9.0",
     "numpy>=2.2.0",
     "rich>=13.0.0",
     "safetensors>=0.5.0",
@@ -16,6 +20,9 @@ dependencies = [
 
 [project.scripts]
 llm-enhance = "trinity.cli:run"
+llm-enhance-ifeval = "trinity.ifeval:run"
+llm-enhance-remote = "trinity.remote:run"
+llm-enhance-serve = "trinity.server:run"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
@@ -25,4 +32,4 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["trinity"]
+packages = ["trinity", "instruction_following_eval"]

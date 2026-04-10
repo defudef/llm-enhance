@@ -134,6 +134,74 @@ uv run python eval_controller.py data/smoke.jsonl \
   --results-path artifacts/eval.jsonl
 ```
 
+## IFEval
+
+Do benchmarku instruction-following jest też runner oparty o oficjalny evaluator IFEval z Google Research.
+
+Base model:
+
+```bash
+uv run llm-enhance-ifeval \
+  --offline \
+  --output-dir artifacts/ifeval-base
+```
+
+Base vs controller:
+
+```bash
+uv run llm-enhance-ifeval \
+  --offline \
+  --controller-checkpoint artifacts/controller-best.pt \
+  --output-dir artifacts/ifeval-controller
+```
+
+Przydatne flagi:
+
+- `--max-examples 25` na szybki smoke run
+- `--max-new-tokens 512` lub więcej, bo część promptów IFEval wymaga dłuższych odpowiedzi
+- `--system-prompt` jeśli chcesz benchmarkować konkretny styl instrukcji systemowej
+
+Wyniki lądują osobno dla `base/` i opcjonalnie `controller/`:
+
+- `responses.jsonl` z wygenerowanymi odpowiedziami
+- `eval_results_strict.jsonl`
+- `eval_results_loose.jsonl`
+- `summary.json` z prompt-level i instruction-level accuracy
+
+## Model Server
+
+Jest też tryb długowiecznego procesu inference, który ładuje bazowy model tylko raz i opcjonalnie cache'uje controllery po ścieżce checkpointu.
+
+Start serwera:
+
+```bash
+uv run llm-enhance-serve --offline --port 8000
+```
+
+Klient do base model:
+
+```bash
+uv run llm-enhance-remote \
+  "Ile to 17 * 19?" \
+  --server-url http://127.0.0.1:8000
+```
+
+Klient z controllerem:
+
+```bash
+uv run llm-enhance-remote \
+  "Ile to 17 * 19?" \
+  --server-url http://127.0.0.1:8000 \
+  --controller-checkpoint artifacts/controller-best.pt \
+  --controller-strength 0.2
+```
+
+Endpointy serwera:
+
+- `GET /healthz`
+- `GET /info`
+- `POST /generate`
+
 ## Current Limits
 
 - Ładowanie pełnych wag przy starcie procesu nadal trochę trwa, bo model nie jest trzymany w długowiecznym serwisie.
