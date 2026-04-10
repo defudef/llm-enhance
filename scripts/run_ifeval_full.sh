@@ -87,7 +87,9 @@ fi
 if [[ "$BASE_ONLY" -eq 0 ]]; then
   CMD+=(--controller-checkpoint "$CONTROLLER_CHECKPOINT")
 fi
-CMD+=("${EXTRA_ARGS[@]}")
+if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
+  CMD+=("${EXTRA_ARGS[@]}")
+fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] IFEval run starting"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Root dir: $ROOT_DIR"

@@ -214,6 +214,66 @@ Smoke:
 ./scripts/run_ifeval_full.sh --max-examples 10
 ```
 
+## Gemma 4 E2B
+
+Jest też osobny MVP controllera dla `Gemma 4 E2B`, ale dla dense modelu, więc jako soft-prompt controller zamiast router-bias controller.
+
+Inference z bazową Gemmą:
+
+```bash
+uv run llm-enhance-gemma \
+  "Write a short joke about saving RAM." \
+  --offline
+```
+
+Inference z controllerem:
+
+```bash
+uv run llm-enhance-gemma \
+  "Write a short joke about saving RAM." \
+  --offline \
+  --controller-checkpoint artifacts/gemma-e2b-controller-best.pt
+```
+
+Trening controllera:
+
+```bash
+uv run python gemma_train_controller.py data/sarcastic_en.jsonl \
+  --offline \
+  --epochs 1
+```
+
+Opis architektury MVP jest w:
+
+- `docs/gemma-e2b-controller.md`
+
+IFEval dla surowej Gemmy:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --offline \
+  --output-dir artifacts/gemma-ifeval
+```
+
+W trakcie runu CLI loguje `elapsed`, średni czas na prompt i `eta`, a do katalogu wyniku zapisuje na bieżąco:
+
+- `responses.jsonl`
+- `progress.json`
+- `summary.partial.json`
+- `eval_results_strict.partial.jsonl`
+- `eval_results_loose.partial.jsonl`
+
+Domyślnie partial snapshot odświeża się co `10` promptów. Możesz to zmienić przez `--save-every`.
+
+IFEval `base vs controller` dla Gemmy:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --offline \
+  --controller-checkpoint artifacts/gemma-e2b-controller-best.pt \
+  --output-dir artifacts/gemma-ifeval-controller
+```
+
 ## Current Limits
 
 - Ładowanie pełnych wag przy starcie procesu nadal trochę trwa, bo model nie jest trzymany w długowiecznym serwisie.

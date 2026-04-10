@@ -1,11 +1,12 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from instruction_following_eval import evaluation_lib
-from trinity.ifeval import build_accuracy_report
+from trinity.ifeval import build_accuracy_report, persist_ifeval_progress
 
 
 class IFEvalTests(unittest.TestCase):
@@ -82,6 +83,34 @@ class IFEvalTests(unittest.TestCase):
             report["tier1"]["change_case:english_lowercase"]["accuracy"],
             1.0,
         )
+
+    def test_persist_ifeval_progress_writes_partial_summary_and_progress(self) -> None:
+        example = evaluation_lib.InputExample(
+            key=1,
+            instruction_id_list=["punctuation:no_comma"],
+            prompt="answer without commas",
+            kwargs=[{}],
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            progress = persist_ifeval_progress(
+                inputs=[example],
+                completed=1,
+                records=[{"prompt": example.prompt, "response": "hello world"}],
+                prompt_to_response={example.prompt: "hello world"},
+                output_dir=output_dir,
+                total_examples=5,
+                elapsed_seconds=12.0,
+                write_partial_eval=True,
+            )
+
+            self.assertEqual(progress["completed_examples"], 1)
+            self.assertAlmostEqual(progress["avg_seconds_per_example"], 12.0)
+            self.assertEqual(progress["eta_human"], "48s")
+            self.assertTrue((output_dir / "responses.jsonl").exists())
+            self.assertTrue((output_dir / "summary.partial.json").exists())
+            self.assertTrue((output_dir / "progress.json").exists())
 
 
 if __name__ == "__main__":
