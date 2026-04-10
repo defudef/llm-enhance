@@ -202,6 +202,18 @@ Endpointy serwera:
 - `GET /info`
 - `POST /generate`
 
+Pełny benchmark z logowaniem na żywo najwygodniej odpalić skryptem:
+
+```bash
+./scripts/run_ifeval_full.sh
+```
+
+Smoke:
+
+```bash
+./scripts/run_ifeval_full.sh --max-examples 10
+```
+
 ## Current Limits
 
 - Ładowanie pełnych wag przy starcie procesu nadal trochę trwa, bo model nie jest trzymany w długowiecznym serwisie.
