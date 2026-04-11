@@ -46,6 +46,54 @@ def status(message: str) -> None:
     typer.secho(message, err=True, fg=typer.colors.BLUE)
 
 
+def use_compact_progress(console: Console) -> bool:
+    return console.width < 100
+
+
+def build_training_progress(console: Console) -> Progress:
+    common_columns = [
+        SpinnerColumn(),
+        TextColumn("[bold blue]{task.description}"),
+    ]
+    if use_compact_progress(console):
+        columns = [
+            *common_columns,
+            TextColumn("{task.completed}/{task.total}"),
+            TextColumn("{task.fields[metrics]}"),
+        ]
+    else:
+        columns = [
+            *common_columns,
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            TextColumn("{task.fields[metrics]}"),
+        ]
+    return Progress(*columns, console=console)
+
+
+def format_step_metrics(
+    *,
+    loss_value: float,
+    current_lr: float,
+    accumulated_examples: int,
+    grad_accum_steps: int,
+    compact: bool | None = None,
+) -> str:
+    if compact is None:
+        compact = use_compact_progress(console)
+    if compact:
+        return (
+            f"l={loss_value:.3f} lr={current_lr:.1e} "
+            f"a={accumulated_examples}/{grad_accum_steps}"
+        )
+    return (
+        f"loss={loss_value:.4f} lr={current_lr:.2e} "
+        f"accum={accumulated_examples}/{grad_accum_steps}"
+    )
+
+
 def category_counts(records: list[dict]) -> dict[str, int]:
     counts = Counter(str(record.get("category", "default")) for record in records)
     return dict(sorted(counts.items()))
@@ -636,16 +684,7 @@ def train(
         warmup_ratio=warmup_ratio,
         total_steps=total_steps,
     )
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("[bold blue]{task.description}"),
-        BarColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        TimeRemainingColumn(),
-        TextColumn("{task.fields[metrics]}"),
-        console=console,
-    )
+    progress = build_training_progress(console)
 
     with mlflow_run:
         if mlflow is not None:
@@ -765,9 +804,11 @@ def train(
                     progress.update(
                         task_id,
                         advance=1,
-                        metrics=(
-                            f"loss={loss.item():.4f} lr={current_lr:.2e} "
-                            f"accum={accumulated_examples}/{grad_accum_steps}"
+                        metrics=format_step_metrics(
+                            loss_value=loss.item(),
+                            current_lr=current_lr,
+                            accumulated_examples=accumulated_examples,
+                            grad_accum_steps=grad_accum_steps,
                         ),
                     )
 

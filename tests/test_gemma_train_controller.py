@@ -10,6 +10,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from gemma_train_controller import (  # noqa: E402
     build_mlflow_params,
     category_counts,
+    format_step_metrics,
     forward_soft_prompt_loss,
     normalize_mlflow_artifact_location,
     optimizer_steps_per_epoch,
@@ -256,6 +257,18 @@ class GemmaTrainControllerTests(unittest.TestCase):
     def test_optimizer_steps_per_epoch_ceil_divides_accumulation(self) -> None:
         self.assertEqual(optimizer_steps_per_epoch(468, 8), 59)
         self.assertEqual(optimizer_steps_per_epoch(8, 8), 1)
+
+    def test_format_step_metrics_has_compact_mode(self) -> None:
+        self.assertEqual(
+            format_step_metrics(
+                loss_value=7.3068,
+                current_lr=7.14e-6,
+                accumulated_examples=0,
+                grad_accum_steps=8,
+                compact=True,
+            ),
+            "l=7.307 lr=7.1e-06 a=0/8",
+        )
 
 
 if __name__ == "__main__":
