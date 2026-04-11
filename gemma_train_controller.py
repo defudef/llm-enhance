@@ -336,20 +336,23 @@ def forward_soft_prompt_loss(
         logits = torch.tanh(logits)
         logits = logits * final_logit_softcapping
     logits = logits.float()
-    shift_logits = logits[..., :-1, :]
-    shift_labels = combined_labels[..., 1:]
+
+    # build_training_example already returns next-token labels:
+    # input_ids = full_ids[:-1], labels = full_ids[1:].
+    # Shifting again here trains the controller against the token two positions
+    # ahead, which can lower token loss while destroying generation quality.
     if combined_mask is not None:
-        shift_attention_mask = combined_mask[:, -shift_logits.shape[1] :].to(logits.device)
-        shift_logits = shift_logits[shift_attention_mask != 0].contiguous()
-        shift_labels = shift_labels[shift_attention_mask.to(shift_labels.device) != 0].contiguous()
+        active_positions = combined_mask.to(device=combined_labels.device, dtype=torch.bool)
+        active_logits = logits[active_positions].contiguous()
+        active_labels = combined_labels[active_positions].contiguous()
     else:
-        shift_logits = shift_logits.contiguous()
-        shift_labels = shift_labels.contiguous()
-    if shift_labels.numel() == 0:
+        active_logits = logits.contiguous()
+        active_labels = combined_labels.contiguous()
+    if active_labels.numel() == 0 or not torch.any(active_labels != -100):
         return None
     loss = torch.nn.functional.cross_entropy(
-        shift_logits.view(-1, runtime.model.config.get_text_config().vocab_size),
-        shift_labels.view(-1).to(shift_logits.device),
+        active_logits.view(-1, runtime.model.config.get_text_config().vocab_size),
+        active_labels.view(-1).to(active_logits.device),
     )
     return loss
 

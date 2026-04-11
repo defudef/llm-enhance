@@ -10,11 +10,84 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from gemma_train_controller import (  # noqa: E402
     build_mlflow_params,
     category_counts,
+    forward_soft_prompt_loss,
     normalize_mlflow_artifact_location,
     resolve_warmup_steps,
     set_optimizer_lr,
     split_train_val,
 )
+
+
+class AlignmentFakeLanguageModel:
+    def get_per_layer_inputs(self, input_ids, _):
+        return torch.zeros(input_ids.shape[0], input_ids.shape[1], 1, 2)
+
+    def __call__(
+        self,
+        *,
+        inputs_embeds,
+        attention_mask,
+        per_layer_inputs,
+        return_dict,
+    ):
+        seq_len = inputs_embeds.shape[1]
+        hidden_states = torch.arange(seq_len, dtype=torch.float32).view(1, seq_len, 1)
+        hidden_states = hidden_states.expand(inputs_embeds.shape[0], seq_len, 2)
+        return type("Output", (), {"last_hidden_state": hidden_states})()
+
+
+class AlignmentFakeLmHead(torch.nn.Module):
+    def forward(self, hidden_states):
+        batch_size, seq_len, _ = hidden_states.shape
+        logits = torch.full((batch_size, seq_len, 8), -20.0)
+        for position in range(seq_len):
+            logits[:, position, position + 2] = 20.0
+        return logits
+
+
+class AlignmentFakeEmbedding(torch.nn.Module):
+    def forward(self, input_ids):
+        return torch.zeros(input_ids.shape[0], input_ids.shape[1], 2)
+
+
+class AlignmentFakeTextConfig:
+    vocab_size = 8
+    final_logit_softcapping = None
+
+
+class AlignmentFakeConfig:
+    def get_text_config(self):
+        return AlignmentFakeTextConfig()
+
+
+class AlignmentFakeGemmaModel:
+    def __init__(self):
+        self.model = type(
+            "ModelContainer",
+            (),
+            {"language_model": AlignmentFakeLanguageModel()},
+        )()
+        self.lm_head = AlignmentFakeLmHead()
+        self.config = AlignmentFakeConfig()
+        self.embedding = AlignmentFakeEmbedding()
+
+    def get_input_embeddings(self):
+        return self.embedding
+
+
+class AlignmentFakeRuntime:
+    device = torch.device("cpu")
+
+    def __init__(self):
+        self.model = AlignmentFakeGemmaModel()
+
+    def build_per_layer_inputs(self, input_ids):
+        return self.model.model.language_model.get_per_layer_inputs(input_ids, None)
+
+
+class AlignmentFakeController(torch.nn.Module):
+    def forward(self, prompt_embeds):
+        return torch.zeros(prompt_embeds.shape[0], 1, prompt_embeds.shape[2])
 
 
 class GemmaTrainControllerTests(unittest.TestCase):
@@ -71,6 +144,19 @@ class GemmaTrainControllerTests(unittest.TestCase):
         self.assertAlmostEqual(lr1, 1e-3)
         self.assertLess(lr5, lr1)
         self.assertGreaterEqual(lr5, 1e-4)
+
+    def test_forward_soft_prompt_loss_uses_pre_shifted_labels(self) -> None:
+        loss = forward_soft_prompt_loss(
+            AlignmentFakeRuntime(),
+            AlignmentFakeController(),
+            prompt_tensor=torch.tensor([[1, 2]], dtype=torch.long),
+            input_ids=torch.tensor([[1, 2, 3]], dtype=torch.long),
+            attention_mask=torch.ones(1, 3, dtype=torch.long),
+            labels=torch.tensor([[-100, 4, 5]], dtype=torch.long),
+        )
+
+        self.assertIsNotNone(loss)
+        self.assertLess(loss.item(), 1e-4)
 
     def test_build_mlflow_params_includes_dataset_split_context(self) -> None:
         train_records = [
