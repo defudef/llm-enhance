@@ -16,6 +16,15 @@ from .runtime import resolve_device, resolve_dtype
 
 
 DEFAULT_GEMMA_MODEL_ID = "google/gemma-4-E2B-it"
+DEFAULT_GEMMA_IFEVAL_SYNTHETIC_DATASET_PATH = Path(
+    "data/gemma_ifeval_synthetic_en.jsonl"
+)
+DEFAULT_GEMMA_IFEVAL_CONTROLLER_PATH = Path("artifacts/gemma-ifeval-synthetic.pt")
+DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH = Path(
+    "artifacts/gemma-ifeval-synthetic-best.pt"
+)
+DEFAULT_GEMMA_IFEVAL_OUTPUT_DIR = Path("artifacts/gemma-ifeval-controller")
+DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH = 0.05
 
 
 def status(message: str) -> None:
@@ -163,11 +172,20 @@ def sample_next_token(
     return torch.multinomial(probs, num_samples=1)
 
 
+def apply_final_logit_softcapping(logits: torch.Tensor, softcapping: float | None) -> torch.Tensor:
+    if softcapping is None:
+        return logits
+    logits = logits / softcapping
+    logits = torch.tanh(logits)
+    return logits * softcapping
+
+
 class GemmaSoftPromptRuntime:
     def __init__(
         self,
         *,
         model_id: str,
+        revision: str | None,
         cache_dir: str | None,
         local_dir: str | None,
         offline: bool,
@@ -177,11 +195,15 @@ class GemmaSoftPromptRuntime:
         self.device = resolve_device(device.lower())
         self.param_dtype = resolve_dtype(dtype.lower(), self.device)
         self.model_id = model_id
+        model_source = local_dir or model_id
+        model_revision = None if local_dir is not None else revision
+        revision_suffix = f" revision {model_revision}" if model_revision else ""
 
-        status(f"Loading Gemma tokenizer for {model_id}...")
+        status(f"Loading Gemma tokenizer for {model_source}{revision_suffix}...")
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_id,
+            model_source,
             cache_dir=cache_dir,
+            revision=model_revision,
             local_files_only=offline,
         )
         status(
@@ -189,10 +211,11 @@ class GemmaSoftPromptRuntime:
             f"with {str(self.param_dtype).replace('torch.', '')}..."
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_id,
+            model_source,
             cache_dir=cache_dir,
+            revision=model_revision,
             local_files_only=offline,
-            torch_dtype=self.param_dtype,
+            dtype=self.param_dtype,
             low_cpu_mem_usage=True,
         )
         self.model.to(self.device)
@@ -230,11 +253,12 @@ class GemmaSoftPromptRuntime:
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
         controller: PromptPoolingSoftPromptController | None,
+        controller_strength: float,
         prompt_embeds: torch.Tensor,
         prompt_attention_mask: torch.Tensor,
     ) -> torch.Tensor:
         language_model = self.model.model.language_model
-        if controller is None:
+        if controller is None or controller_strength <= 0:
             outputs = language_model(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
@@ -242,7 +266,10 @@ class GemmaSoftPromptRuntime:
                 return_dict=True,
             )
         else:
-            soft_prompt = controller(prompt_embeds, prompt_attention_mask)
+            soft_prompt = controller_strength * controller(
+                prompt_embeds,
+                prompt_attention_mask,
+            )
             input_embeds = self.model.get_input_embeddings()(input_ids)
             combined_embeds, combined_mask = prepend_soft_prompt(
                 inputs_embeds=input_embeds,
@@ -263,11 +290,12 @@ class GemmaSoftPromptRuntime:
         hidden_states = outputs.last_hidden_state
         logits = self.model.lm_head(hidden_states[:, -1:, :]).squeeze(1)
         final_logit_softcapping = self.model.config.get_text_config().final_logit_softcapping
-        if final_logit_softcapping is not None:
-            logits = logits / final_logit_softcapping
-            logits = torch.tanh(logits)
-            logits = logits * final_logit_softcapping
-        return logits
+        return apply_final_logit_softcapping(logits, final_logit_softcapping)
+
+    def logits_from_hidden_states(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        logits = self.model.lm_head(hidden_states[:, -1:, :]).squeeze(1)
+        final_logit_softcapping = self.model.config.get_text_config().final_logit_softcapping
+        return apply_final_logit_softcapping(logits, final_logit_softcapping)
 
     @torch.inference_mode()
     def generate(
@@ -276,6 +304,7 @@ class GemmaSoftPromptRuntime:
         prompt: str,
         system_prompt: str | None,
         controller: PromptPoolingSoftPromptController | None,
+        controller_strength: float,
         max_new_tokens: int,
         temperature: float,
         top_k: int,
@@ -287,15 +316,43 @@ class GemmaSoftPromptRuntime:
         prompt_attention_mask = attention_mask.clone()
         generated_tokens: list[int] = []
         eos_token_id = self.tokenizer.eos_token_id
+        language_model = self.model.model.language_model
 
-        for _ in range(max_new_tokens):
-            logits = self.compute_logits(
+        if controller is None or controller_strength <= 0:
+            outputs = language_model(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                controller=controller,
-                prompt_embeds=prompt_embeds,
-                prompt_attention_mask=prompt_attention_mask,
+                use_cache=True,
+                return_dict=True,
             )
+            active_attention_mask = attention_mask
+        else:
+            soft_prompt = controller_strength * controller(
+                prompt_embeds,
+                prompt_attention_mask,
+            )
+            input_embeds = self.model.get_input_embeddings()(input_ids)
+            combined_embeds, active_attention_mask = prepend_soft_prompt(
+                inputs_embeds=input_embeds,
+                soft_prompt_embeds=soft_prompt,
+                attention_mask=attention_mask,
+            )
+            combined_per_layer_inputs = prepend_per_layer_inputs(
+                per_layer_inputs=self.build_per_layer_inputs(input_ids),
+                prefix_length=soft_prompt.shape[1],
+            )
+            outputs = language_model(
+                inputs_embeds=combined_embeds,
+                attention_mask=active_attention_mask,
+                per_layer_inputs=combined_per_layer_inputs,
+                use_cache=True,
+                return_dict=True,
+            )
+
+        past_key_values = outputs.past_key_values
+        logits = self.logits_from_hidden_states(outputs.last_hidden_state)
+
+        for _ in range(max_new_tokens):
             next_token = sample_next_token(
                 logits,
                 temperature=temperature,
@@ -306,12 +363,20 @@ class GemmaSoftPromptRuntime:
                 break
             generated_tokens.append(token_id)
             next_token = next_token.to(device=input_ids.device, dtype=input_ids.dtype)
-            input_ids = torch.cat([input_ids, next_token], dim=1)
             next_mask = torch.ones(
-                (attention_mask.shape[0], 1),
-                device=attention_mask.device,
-                dtype=attention_mask.dtype,
+                (active_attention_mask.shape[0], 1),
+                device=active_attention_mask.device,
+                dtype=active_attention_mask.dtype,
             )
-            attention_mask = torch.cat([attention_mask, next_mask], dim=1)
+            active_attention_mask = torch.cat([active_attention_mask, next_mask], dim=1)
+            outputs = language_model(
+                input_ids=next_token,
+                attention_mask=active_attention_mask,
+                past_key_values=past_key_values,
+                use_cache=True,
+                return_dict=True,
+            )
+            past_key_values = outputs.past_key_values
+            logits = self.logits_from_hidden_states(outputs.last_hidden_state)
 
         return self.tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()

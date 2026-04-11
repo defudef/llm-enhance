@@ -222,8 +222,7 @@ Inference z bazową Gemmą:
 
 ```bash
 uv run llm-enhance-gemma \
-  "Write a short joke about saving RAM." \
-  --offline
+  "Write a short joke about saving RAM."
 ```
 
 Inference z controllerem:
@@ -231,16 +230,35 @@ Inference z controllerem:
 ```bash
 uv run llm-enhance-gemma \
   "Write a short joke about saving RAM." \
-  --offline \
-  --controller-checkpoint artifacts/gemma-e2b-controller-best.pt
+  --controller-checkpoint artifacts/gemma-ifeval-synthetic-best.pt \
+  --controller-strength 0.05
 ```
 
-Trening controllera:
+Dataset pod instruction-following i twardsze formatowanie:
 
 ```bash
-uv run python gemma_train_controller.py data/sarcastic_en.jsonl \
-  --offline \
-  --epochs 1
+uv run python scripts/build_gemma_ifeval_synthetic.py
+```
+
+Generator zapisuje teraz 576 syntetycznych rekordów IFEval-style. Domyślny
+trening Gemmy używa `data/gemma_ifeval_synthetic_en.jsonl`,
+zapisuje checkpointy do `artifacts/gemma-ifeval-synthetic*.pt`, loguje MLflow
+i ma ustawione hparamy pod bieżący eksperyment IFEval. Wystarczy:
+
+```bash
+uv run python gemma_train_controller.py
+```
+
+Aktualne defaulty treningu: `--epochs 24`, `--learning-rate 2e-4`,
+`--warmup-ratio 0.03`, `--num-virtual-tokens 16`, `--controller-dim 256`,
+`--controller-hidden-dim 1024`, `--controller-dropout 0`,
+`--max-response-tokens 512`, `--val-split 0.2`, `--patience 10` i `--mlflow`.
+
+MLflow zapisuje lokalną bazę runów domyślnie w `artifacts/mlflow.db`,
+a artefakty w `artifacts/mlflow-artifacts`. UI:
+
+```bash
+uv run mlflow ui --backend-store-uri sqlite:///artifacts/mlflow.db
 ```
 
 Opis architektury MVP jest w:
@@ -251,7 +269,7 @@ IFEval dla surowej Gemmy:
 
 ```bash
 uv run llm-enhance-gemma-ifeval \
-  --offline \
+  --base-only \
   --output-dir artifacts/gemma-ifeval
 ```
 
@@ -268,10 +286,7 @@ Domyślnie partial snapshot odświeża się co `10` promptów. Możesz to zmieni
 IFEval `base vs controller` dla Gemmy:
 
 ```bash
-uv run llm-enhance-gemma-ifeval \
-  --offline \
-  --controller-checkpoint artifacts/gemma-e2b-controller-best.pt \
-  --output-dir artifacts/gemma-ifeval-controller
+uv run llm-enhance-gemma-ifeval
 ```
 
 ## Current Limits

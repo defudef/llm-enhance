@@ -22,14 +22,20 @@ def infer(
     model_id: Annotated[
         str, typer.Option(help="Gemma model id on Hugging Face.")
     ] = DEFAULT_GEMMA_MODEL_ID,
+    revision: Annotated[
+        str | None, typer.Option(help="Optional Hugging Face model revision or snapshot hash.")
+    ] = None,
     controller_checkpoint: Annotated[
         Path | None, typer.Option(help="Optional soft-prompt controller checkpoint.")
     ] = None,
+    controller_strength: Annotated[
+        float, typer.Option(help="Multiplier applied to Gemma soft-prompt controller embeddings.")
+    ] = 1.0,
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
     ] = None,
     local_dir: Annotated[
-        str | None, typer.Option(help="Unused placeholder for symmetry with other CLIs.")
+        str | None, typer.Option(help="Optional local model directory. Overrides --model-id.")
     ] = None,
     offline: Annotated[
         bool, typer.Option(help="Use only locally cached model files.")
@@ -57,9 +63,12 @@ def infer(
         raise typer.BadParameter(
             f"Controller checkpoint not found at {controller_checkpoint}."
         )
+    if controller_strength < 0:
+        raise typer.BadParameter("--controller-strength must be greater than or equal to 0.")
 
     runtime = GemmaSoftPromptRuntime(
         model_id=model_id,
+        revision=revision,
         cache_dir=cache_dir,
         local_dir=local_dir,
         offline=offline,
@@ -78,6 +87,7 @@ def infer(
         prompt=prompt,
         system_prompt=system_prompt,
         controller=controller,
+        controller_strength=controller_strength,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_k=top_k,

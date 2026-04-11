@@ -12,6 +12,9 @@ from instruction_following_eval import evaluation_lib
 
 from .dense_controller import PromptPoolingSoftPromptController
 from .gemma_runtime import (
+    DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH,
+    DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
+    DEFAULT_GEMMA_IFEVAL_OUTPUT_DIR,
     DEFAULT_GEMMA_MODEL_ID,
     GemmaSoftPromptRuntime,
     load_gemma_controller_checkpoint,
@@ -59,19 +62,29 @@ def run_ifeval(
     output_dir: Annotated[
         Path,
         typer.Option(help="Directory where generated responses and IFEval reports are saved."),
-    ] = Path("artifacts/gemma-ifeval"),
+    ] = DEFAULT_GEMMA_IFEVAL_OUTPUT_DIR,
     model_id: Annotated[
         str, typer.Option(help="Gemma model id on Hugging Face.")
     ] = DEFAULT_GEMMA_MODEL_ID,
-    controller_checkpoint: Annotated[
-        Path | None,
-        typer.Option(help="Optional soft-prompt controller checkpoint. If omitted, only base Gemma is benchmarked."),
+    revision: Annotated[
+        str | None, typer.Option(help="Optional Hugging Face model revision or snapshot hash.")
     ] = None,
+    controller_checkpoint: Annotated[
+        Path,
+        typer.Option(help="Soft-prompt controller checkpoint used unless --base-only is set."),
+    ] = DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH,
+    run_controller: Annotated[
+        bool,
+        typer.Option("--controller/--base-only", help="Run controller comparison in addition to base Gemma."),
+    ] = True,
+    controller_strength: Annotated[
+        float, typer.Option(help="Multiplier applied to Gemma soft-prompt controller embeddings.")
+    ] = DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
     ] = None,
     local_dir: Annotated[
-        str | None, typer.Option(help="Unused placeholder for symmetry with other CLIs.")
+        str | None, typer.Option(help="Optional local model directory. Overrides --model-id.")
     ] = None,
     offline: Annotated[
         bool, typer.Option(help="Use only locally cached model files.")
@@ -103,11 +116,14 @@ def run_ifeval(
 ) -> None:
     if max_new_tokens <= 0:
         raise typer.BadParameter("--max-new-tokens must be greater than 0.")
+    if controller_strength < 0:
+        raise typer.BadParameter("--controller-strength must be greater than or equal to 0.")
     if save_every <= 0:
         raise typer.BadParameter("--save-every must be greater than 0.")
-    if controller_checkpoint is not None and not controller_checkpoint.exists():
+    if run_controller and not controller_checkpoint.exists():
         raise typer.BadParameter(
-            f"Controller checkpoint not found at {controller_checkpoint}."
+            f"Controller checkpoint not found at {controller_checkpoint}. "
+            "Train the controller first or pass --base-only."
         )
 
     ensure_nltk_punkt()
@@ -120,6 +136,7 @@ def run_ifeval(
 
     runtime = GemmaSoftPromptRuntime(
         model_id=model_id,
+        revision=revision,
         cache_dir=cache_dir,
         local_dir=local_dir,
         offline=offline,
@@ -127,7 +144,7 @@ def run_ifeval(
         dtype=dtype,
     )
     controller: PromptPoolingSoftPromptController | None = None
-    if controller_checkpoint is not None:
+    if run_controller:
         status("Loading Gemma soft-prompt controller checkpoint...")
         controller = load_gemma_controller_checkpoint(
             controller_checkpoint,
@@ -167,10 +184,12 @@ def run_ifeval(
         )
 
     for idx, inp in enumerate(inputs, start=1):
+        status(f"generating base {idx}/{total_examples}...")
         base_response = runtime.generate(
             prompt=inp.prompt,
             system_prompt=system_prompt,
             controller=None,
+            controller_strength=0.0,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_k=top_k,
@@ -179,10 +198,12 @@ def run_ifeval(
         base_prompt_to_response[inp.prompt] = base_response
 
         if controller is not None:
+            status(f"generating controller {idx}/{total_examples}...")
             controller_response = runtime.generate(
                 prompt=inp.prompt,
                 system_prompt=system_prompt,
                 controller=controller,
+                controller_strength=controller_strength,
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_k=top_k,

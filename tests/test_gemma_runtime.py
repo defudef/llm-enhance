@@ -7,6 +7,7 @@ import torch
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from trinity.gemma_runtime import (  # noqa: E402
+    GemmaSoftPromptRuntime,
     build_messages,
     build_training_example,
     prepend_per_layer_inputs,
@@ -30,9 +31,104 @@ class FakeTokenizer:
         assert enable_thinking is False
         return " | ".join(f"{m['role']}:{m['content']}" for m in messages) + " | assistant:"
 
-    def __call__(self, text, add_special_tokens=False):
+    def __call__(self, text, return_tensors=None, add_special_tokens=False):
         assert add_special_tokens is False
-        return {"input_ids": [ord(ch) % 17 for ch in text]}
+        input_ids = [ord(ch) % 17 for ch in text]
+        if return_tensors == "pt":
+            return {
+                "input_ids": torch.tensor([input_ids], dtype=torch.long),
+                "attention_mask": torch.ones(1, len(input_ids), dtype=torch.long),
+            }
+        return {"input_ids": input_ids}
+
+    def decode(self, token_ids, skip_special_tokens=True):
+        return " ".join(str(token_id) for token_id in token_ids)
+
+
+class FakeOutput:
+    def __init__(self, *, last_hidden_state, past_key_values):
+        self.last_hidden_state = last_hidden_state
+        self.past_key_values = past_key_values
+
+
+class FakeLanguageModel:
+    def __init__(self):
+        self.calls = []
+
+    def get_per_layer_inputs(self, input_ids, _):
+        return torch.zeros(
+            input_ids.shape[0],
+            input_ids.shape[1],
+            1,
+            3,
+            dtype=torch.float32,
+        )
+
+    def __call__(
+        self,
+        *,
+        input_ids=None,
+        inputs_embeds=None,
+        attention_mask=None,
+        past_key_values=None,
+        use_cache=None,
+        return_dict=None,
+        **kwargs,
+    ):
+        self.calls.append(
+            {
+                "input_ids_shape": None if input_ids is None else tuple(input_ids.shape),
+                "inputs_embeds_shape": (
+                    None if inputs_embeds is None else tuple(inputs_embeds.shape)
+                ),
+                "attention_mask_shape": (
+                    None if attention_mask is None else tuple(attention_mask.shape)
+                ),
+                "past_key_values": past_key_values,
+                "use_cache": use_cache,
+                "return_dict": return_dict,
+            }
+        )
+        if input_ids is not None:
+            seq_len = input_ids.shape[1]
+        else:
+            seq_len = inputs_embeds.shape[1]
+        call_index = len(self.calls) - 1
+        hidden = torch.full((1, seq_len, 3), float(call_index))
+        return FakeOutput(last_hidden_state=hidden, past_key_values=f"cache-{call_index}")
+
+
+class FakeEmbedding(torch.nn.Module):
+    def forward(self, input_ids):
+        return torch.zeros(input_ids.shape[0], input_ids.shape[1], 3)
+
+
+class FakeLmHead(torch.nn.Module):
+    def forward(self, hidden_states):
+        call_index = int(hidden_states[0, -1, 0].item())
+        logits = torch.zeros(hidden_states.shape[0], hidden_states.shape[1], 100)
+        logits[:, :, 2 if call_index == 0 else 99] = 1.0
+        return logits
+
+
+class FakeTextConfig:
+    final_logit_softcapping = None
+
+
+class FakeConfig:
+    def get_text_config(self):
+        return FakeTextConfig()
+
+
+class FakeGemmaModel:
+    def __init__(self):
+        self.model = type("ModelContainer", (), {"language_model": FakeLanguageModel()})()
+        self.lm_head = FakeLmHead()
+        self.config = FakeConfig()
+        self.embedding = FakeEmbedding()
+
+    def get_input_embeddings(self):
+        return self.embedding
 
 
 class GemmaRuntimeTests(unittest.TestCase):
@@ -92,6 +188,31 @@ class GemmaRuntimeTests(unittest.TestCase):
         token = sample_next_token(logits, temperature=0.0, top_k=0)
 
         self.assertEqual(int(token.item()), 1)
+
+    def test_generate_reuses_kv_cache_after_prefill(self) -> None:
+        runtime = object.__new__(GemmaSoftPromptRuntime)
+        runtime.device = torch.device("cpu")
+        runtime.tokenizer = FakeTokenizer()
+        runtime.model = FakeGemmaModel()
+
+        response = runtime.generate(
+            prompt="hello",
+            system_prompt=None,
+            controller=None,
+            controller_strength=0.0,
+            max_new_tokens=4,
+            temperature=0.0,
+            top_k=0,
+        )
+
+        language_model = runtime.model.model.language_model
+        self.assertEqual(response, "2")
+        self.assertEqual(len(language_model.calls), 2)
+        self.assertEqual(language_model.calls[0]["input_ids_shape"][1], len("user:hello | assistant:"))
+        self.assertIsNone(language_model.calls[0]["past_key_values"])
+        self.assertEqual(language_model.calls[1]["input_ids_shape"], (1, 1))
+        self.assertEqual(language_model.calls[1]["past_key_values"], "cache-0")
+        self.assertTrue(all(call["use_cache"] for call in language_model.calls))
 
 
 if __name__ == "__main__":
