@@ -242,17 +242,17 @@ uv run python scripts/build_gemma_ifeval_synthetic.py
 
 Generator zapisuje teraz 576 syntetycznych rekordów IFEval-style. Domyślny
 trening Gemmy używa `data/gemma_ifeval_synthetic_en.jsonl`,
-zapisuje checkpointy do `artifacts/gemma-ifeval-synthetic*.pt`, loguje MLflow
+zapisuje checkpointy do `artifacts/gemma-ifeval-alignfix-small*.pt`, loguje MLflow
 i ma ustawione hparamy pod bieżący eksperyment IFEval. Wystarczy:
 
 ```bash
 uv run python gemma_train_controller.py
 ```
 
-Aktualne defaulty treningu: `--epochs 24`, `--learning-rate 2e-4`,
-`--warmup-ratio 0.03`, `--num-virtual-tokens 16`, `--controller-dim 256`,
-`--controller-hidden-dim 1024`, `--controller-dropout 0`,
-`--max-response-tokens 512`, `--val-split 0.2`, `--patience 10` i `--mlflow`.
+Aktualne defaulty treningu: `--epochs 8`, `--learning-rate 5e-5`,
+`--grad-accum-steps 8`, `--warmup-ratio 0.03`, `--num-virtual-tokens 4`,
+`--controller-dim 64`, `--controller-hidden-dim 256`, `--controller-dropout 0.05`,
+`--max-response-tokens 512`, `--val-split 0.2`, `--patience 2` i `--mlflow`.
 
 MLflow zapisuje lokalną bazę runów domyślnie w `artifacts/mlflow.db`,
 a artefakty w `artifacts/mlflow-artifacts`. UI:

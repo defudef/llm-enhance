@@ -19,9 +19,9 @@ DEFAULT_GEMMA_MODEL_ID = "google/gemma-4-E2B-it"
 DEFAULT_GEMMA_IFEVAL_SYNTHETIC_DATASET_PATH = Path(
     "data/gemma_ifeval_synthetic_en.jsonl"
 )
-DEFAULT_GEMMA_IFEVAL_CONTROLLER_PATH = Path("artifacts/gemma-ifeval-synthetic.pt")
+DEFAULT_GEMMA_IFEVAL_CONTROLLER_PATH = Path("artifacts/gemma-ifeval-alignfix-small.pt")
 DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH = Path(
-    "artifacts/gemma-ifeval-synthetic-best.pt"
+    "artifacts/gemma-ifeval-alignfix-small-best.pt"
 )
 DEFAULT_GEMMA_IFEVAL_OUTPUT_DIR = Path("artifacts/gemma-ifeval-controller")
 DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH = 0.05

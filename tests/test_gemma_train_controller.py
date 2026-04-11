@@ -12,6 +12,7 @@ from gemma_train_controller import (  # noqa: E402
     category_counts,
     forward_soft_prompt_loss,
     normalize_mlflow_artifact_location,
+    optimizer_steps_per_epoch,
     resolve_warmup_steps,
     set_optimizer_lr,
     split_train_val,
@@ -189,6 +190,8 @@ class GemmaTrainControllerTests(unittest.TestCase):
             controller_dropout=0.05,
             epochs=3,
             learning_rate=2e-4,
+            grad_accum_steps=8,
+            optimizer_steps_per_epoch=4,
             warmup_steps=24,
             effective_warmup_steps=24,
             warmup_ratio=0.03,
@@ -211,6 +214,8 @@ class GemmaTrainControllerTests(unittest.TestCase):
         self.assertEqual(params["dataset.val_category.alpha.examples"], 1)
         self.assertEqual(params["model.revision"], "none")
         self.assertEqual(params["model.param_dtype"], "float32")
+        self.assertEqual(params["train.grad_accum_steps"], 8)
+        self.assertEqual(params["train.optimizer_steps_per_epoch"], 4)
         self.assertEqual(params["train.effective_warmup_steps"], 24)
 
     def test_category_counts_uses_default_for_missing_category(self) -> None:
@@ -247,6 +252,10 @@ class GemmaTrainControllerTests(unittest.TestCase):
             ),
             24,
         )
+
+    def test_optimizer_steps_per_epoch_ceil_divides_accumulation(self) -> None:
+        self.assertEqual(optimizer_steps_per_epoch(468, 8), 59)
+        self.assertEqual(optimizer_steps_per_epoch(8, 8), 1)
 
 
 if __name__ == "__main__":
