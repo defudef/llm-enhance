@@ -1,6 +1,28 @@
 # llm-enhance
 
-Minimalny, własny runtime `PyTorch` dla `arcee-ai/Trinity-Nano-Preview` bez używania `transformers` jako silnika modelu. Kod runtime siedzi w pakiecie `trinity/`.
+Experimental controllers and evaluation harnesses for local LLM inference.
+
+The current focus is a lightweight soft-prompt controller for
+`google/gemma-4-E2B-it`, evaluated with IFEval. The repository also contains an
+older custom PyTorch runtime for `arcee-ai/Trinity-Nano-Preview` and a
+router-bias controller for that MoE model.
+
+Status: experimental. The code is intended to make controller experiments,
+generated responses, and IFEval comparisons reproducible. It should not be read
+as a validated training method or a performance-optimized inference stack.
+
+## What This Tests
+
+- Whether a small learned controller can steer a frozen local model without
+  updating the base weights.
+- Whether repeating the same IFEval prompt at generation time changes
+  instruction-following accuracy.
+- Which instruction categories improve or regress under controller and prompt
+  ablations.
+
+The benchmark artifacts are written under `artifacts/` and include raw
+responses, strict/loose IFEval outputs, partial progress snapshots, and summary
+JSON files.
 
 ## Setup
 
@@ -9,7 +31,153 @@ echo 3.13 > .python-version
 uv sync
 ```
 
-## Run
+## Gemma 4 E2B
+
+This is the main active experiment. `Gemma 4 E2B` is a dense model, so this path
+uses a soft-prompt controller instead of the Trinity router-bias controller.
+
+Run base Gemma:
+
+```bash
+uv run llm-enhance-gemma \
+  "Write a short joke about saving RAM."
+```
+
+Run Gemma with a controller checkpoint:
+
+```bash
+uv run llm-enhance-gemma \
+  "Write a short joke about saving RAM." \
+  --controller-checkpoint artifacts/gemma-ifeval-synthetic-best.pt \
+  --controller-strength 0.05
+```
+
+Build the synthetic instruction-following dataset:
+
+```bash
+uv run python scripts/build_gemma_ifeval_synthetic.py
+```
+
+The generator writes `data/gemma_ifeval_synthetic_en.jsonl`. The default Gemma
+controller training flow uses that dataset, writes checkpoints to
+`artifacts/gemma-ifeval-alignfix-small*.pt`, and logs to MLflow:
+
+```bash
+uv run python gemma_train_controller.py
+```
+
+Current training defaults:
+
+- `--epochs 8`
+- `--learning-rate 5e-5`
+- `--grad-accum-steps 8`
+- `--warmup-ratio 0.03`
+- `--num-virtual-tokens 4`
+- `--controller-dim 64`
+- `--controller-hidden-dim 256`
+- `--controller-dropout 0.05`
+- `--max-response-tokens 512`
+- `--val-split 0.2`
+- `--patience 2`
+- `--mlflow`
+
+MLflow stores the local run database at `artifacts/mlflow.db` and artifacts under
+`artifacts/mlflow-artifacts` by default:
+
+```bash
+uv run mlflow ui --backend-store-uri sqlite:///artifacts/mlflow.db
+```
+
+The controller design note is in `docs/gemma-e2b-controller.md`.
+
+## Gemma IFEval
+
+Run raw Gemma on the full IFEval dataset:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --base-only \
+  --output-dir artifacts/gemma-ifeval
+```
+
+Run base vs controller:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --output-dir artifacts/gemma-ifeval-controller-1x
+```
+
+Run only the controller variant when a matching base run already exists:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --controller-only \
+  --controller-checkpoint artifacts/gemma-ifeval-alignfix-small-best.pt \
+  --controller-strength 0.05 \
+  --output-dir artifacts/gemma-ifeval-controller-1x
+```
+
+Run raw Gemma with each prompt repeated twice at generation time:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --base-only \
+  --prompt-repeats 2 \
+  --output-dir artifacts/gemma-ifeval-base-2x
+```
+
+Run base vs controller with each prompt repeated twice:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --prompt-repeats 2 \
+  --output-dir artifacts/gemma-ifeval-controller-2x
+```
+
+`--prompt-repeats 2` changes only the generation prompt. IFEval scoring still
+uses the original prompt from the official input set as the key, so the metrics
+stay comparable.
+
+During a run, the CLI logs elapsed time, average time per prompt, and ETA. Each
+output directory receives:
+
+- `responses.jsonl`
+- `progress.json`
+- `run_config.json`
+- `summary.partial.json`
+- `eval_results_strict.partial.jsonl`
+- `eval_results_loose.partial.jsonl`
+- `summary.json` after the full run completes
+- `eval_results_strict.jsonl` after the full run completes
+- `eval_results_loose.jsonl` after the full run completes
+
+Partial snapshots refresh every 10 prompts by default. Change that with
+`--save-every`.
+
+Interpretation rule: compare full runs against full runs, and partial runs only
+against the same prefix of the official IFEval input set. The dataset order is
+not guaranteed to have uniform difficulty across prefixes.
+
+Full-run results from the current experiment:
+
+| Variant | Final | Delta vs base 1x | Strict prompt | Strict instruction | Loose prompt | Loose instruction |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Base 1x | 0.7326 | +0.00pp | 0.6765 | 0.7614 | 0.7061 | 0.7866 |
+| Controller 1x | 0.7346 | +0.20pp | 0.6765 | 0.7650 | 0.7079 | 0.7890 |
+| Base 2x | 0.7579 | +2.52pp | 0.6987 | 0.7854 | 0.7357 | 0.8118 |
+| Controller 2x | 0.7616 | +2.89pp | 0.7043 | 0.7818 | 0.7449 | 0.8153 |
+
+In this run, prompt repetition produced most of the lift: `base 2x` improved
+`+2.52pp` over `base 1x`, while `controller 2x` improved only another `+0.37pp`
+over `base 2x`. The controller alone was nearly flat at `+0.20pp`.
+
+## Trinity Runtime
+
+The repository still includes a minimal custom PyTorch runtime for
+`arcee-ai/Trinity-Nano-Preview`, without using `transformers` as the model
+execution engine. The runtime code lives under `trinity/`.
+
+Run Trinity:
 
 ```bash
 uv run llm-enhance \
@@ -17,7 +185,7 @@ uv run llm-enhance \
   --max-new-tokens 16
 ```
 
-Z controllerem:
+Run Trinity with the router-bias controller:
 
 ```bash
 uv run llm-enhance \
@@ -27,56 +195,59 @@ uv run llm-enhance \
   --offline
 ```
 
-Jeśli chcesz podać już sformatowany prompt, użyj `--raw-prompt`.
-Domyślnie backend jest wykrywany automatycznie w kolejności `cuda -> mps -> cpu`. `--device` zostaje tylko jako ręczny override.
-`--dtype auto` dobiera precision tak:
-`cuda -> bfloat16` jeśli wspierane, inaczej `float16`; `mps -> float16`; `cpu -> float32`.
-CLI wypisuje postęp na `stderr`, więc przy ciężkim ładowaniu wag i wolniejszej generacji na `mps` nie wygląda jak freeze.
-Sama odpowiedź jest streamowana token po tokenie do `stdout`.
-Model i tak jest cachowany na dysku przez Hugging Face, domyślnie pod `~/.cache/huggingface/hub/`.
-Jeśli chcesz całkiem lokalny workflow bez checków do sieci, użyj:
+Use `--raw-prompt` to pass an already formatted prompt. By default, the backend
+is selected in this order: `cuda -> mps -> cpu`. `--dtype auto` selects
+`bfloat16` on CUDA when supported, otherwise `float16`; `float16` on MPS; and
+`float32` on CPU. The generated answer streams token by token to `stdout`, while
+status messages go to `stderr`.
+
+Use offline mode once the model is cached locally:
 
 ```bash
 uv run llm-enhance "Siema" --offline
 ```
 
-Jeśli chcesz mieć pliki jawnie zmaterializowane w katalogu projektu:
+Use a project-local model directory:
 
 ```bash
 uv run llm-enhance "Siema" --local-dir .models/trinity-nano --offline
 ```
 
-Kompatybilny wrapper dalej działa:
+The compatibility wrapper still works:
 
 ```bash
 uv run python main.py "Hello"
 ```
 
-## Controller MVP
+## Trinity Controller
 
-W repo jest też MVP osobnego controllera, który steruje routerem MoE bez modyfikowania checkpointu Trinity.
+The Trinity controller is a small router-bias controller for the MoE runtime:
 
-- controller bierze embedding promptu
-- robi pooling promptu
-- produkuje biasy `num_moe_layers x num_experts`
-- Trinity używa tych biasów przed `topk` w routerze
+- it reads prompt embeddings,
+- pools the prompt,
+- produces `num_moe_layers x num_experts` router biases,
+- and applies those biases before `topk` routing.
 
-Trening:
+Train it on the default `data/sarcastic_en.jsonl` dataset:
 
 ```bash
 uv run python train_controller.py --offline --epochs 1
 ```
 
-Domyślny dataset treningowy to `data/sarcastic_en.jsonl`. Inny dataset możesz nadal podać jako argument pozycyjny, np. `uv run python train_controller.py data/smoke.jsonl --offline`.
+Use a custom JSONL dataset:
 
-Format `JSONL`:
+```bash
+uv run python train_controller.py data/smoke.jsonl --offline
+```
+
+Dataset format:
 
 ```json
 {"prompt":"Ile to 2+2?","response":"4"}
 {"prompt":"Zaplanuj prosty weekend w Krakowie","response":"Sobota: ..."}
 ```
 
-Przykładowy dataset sarkastyczny po angielsku jest w `data/sarcastic_en.jsonl`:
+Example longer training run:
 
 ```bash
 uv run python train_controller.py \
@@ -86,10 +257,7 @@ uv run python train_controller.py \
   --best-output-path artifacts/controller-sarcastic-pl-best.pt
 ```
 
-Przy takim otwartym, stylistycznym dataspecie `val_loss` jest bardziej użyteczny niż exact-match, bo wiele sarkastycznych odpowiedzi może być poprawnych.
-`--output-path` zapisuje ostatnią zakończoną epokę, a `--best-output-path` tylko najlepszą metrykę walidacyjną.
-
-Szybsza pętla eksperymentalna:
+Faster experimental loop:
 
 ```bash
 uv run python train_controller.py \
@@ -103,9 +271,11 @@ uv run python train_controller.py \
   --eval-every 3
 ```
 
-`--dtype float16` przyspiesza bazowy model na MPS, `--max-response-tokens` skraca targety treningowe, a `--eval-every` ogranicza koszt walidacji. Jeśli wrócą NaNy, wróć z `--dtype float16` do domyślnego `float32`.
+`--dtype float16` speeds up the base model on MPS, `--max-response-tokens`
+shortens training targets, and `--eval-every` reduces validation cost. If NaNs
+return, switch back from `--dtype float16` to the default `float32`.
 
-Inference z wytrenowanym controllerem:
+Run inference with a trained Trinity controller:
 
 ```bash
 uv run python infer_controller.py \
@@ -114,17 +284,7 @@ uv run python infer_controller.py \
   --offline
 ```
 
-To samo przez główne CLI:
-
-```bash
-uv run llm-enhance \
-  "Ile to 17 * 19?" \
-  --with-controller \
-  --controller-strength 0.2 \
-  --offline
-```
-
-Ewaluacja `base vs controller`:
+Evaluate base vs controller:
 
 ```bash
 uv run python eval_controller.py data/smoke.jsonl --offline
@@ -134,11 +294,9 @@ uv run python eval_controller.py data/smoke.jsonl \
   --results-path artifacts/eval.jsonl
 ```
 
-## IFEval
+## Trinity IFEval
 
-Do benchmarku instruction-following jest też runner oparty o oficjalny evaluator IFEval z Google Research.
-
-Base model:
+Run the older Trinity IFEval runner on the base model:
 
 ```bash
 uv run llm-enhance-ifeval \
@@ -146,7 +304,7 @@ uv run llm-enhance-ifeval \
   --output-dir artifacts/ifeval-base
 ```
 
-Base vs controller:
+Run base vs controller:
 
 ```bash
 uv run llm-enhance-ifeval \
@@ -155,30 +313,36 @@ uv run llm-enhance-ifeval \
   --output-dir artifacts/ifeval-controller
 ```
 
-Przydatne flagi:
+Useful flags:
 
-- `--max-examples 25` na szybki smoke run
-- `--max-new-tokens 512` lub więcej, bo część promptów IFEval wymaga dłuższych odpowiedzi
-- `--system-prompt` jeśli chcesz benchmarkować konkretny styl instrukcji systemowej
+- `--max-examples 25` for a smoke run
+- `--max-new-tokens 512` or more for longer IFEval answers
+- `--system-prompt` to benchmark a specific system instruction
 
-Wyniki lądują osobno dla `base/` i opcjonalnie `controller/`:
+The helper script runs the full Trinity IFEval with live logging:
 
-- `responses.jsonl` z wygenerowanymi odpowiedziami
-- `eval_results_strict.jsonl`
-- `eval_results_loose.jsonl`
-- `summary.json` z prompt-level i instruction-level accuracy
+```bash
+./scripts/run_ifeval_full.sh
+```
+
+Smoke run:
+
+```bash
+./scripts/run_ifeval_full.sh --max-examples 10
+```
 
 ## Model Server
 
-Jest też tryb długowiecznego procesu inference, który ładuje bazowy model tylko raz i opcjonalnie cache'uje controllery po ścieżce checkpointu.
+The server mode keeps the base model loaded and can cache controller checkpoints
+by path.
 
-Start serwera:
+Start the server:
 
 ```bash
 uv run llm-enhance-serve --offline --port 8000
 ```
 
-Klient do base model:
+Call the base model:
 
 ```bash
 uv run llm-enhance-remote \
@@ -186,7 +350,7 @@ uv run llm-enhance-remote \
   --server-url http://127.0.0.1:8000
 ```
 
-Klient z controllerem:
+Call the model with a controller:
 
 ```bash
 uv run llm-enhance-remote \
@@ -196,101 +360,28 @@ uv run llm-enhance-remote \
   --controller-strength 0.2
 ```
 
-Endpointy serwera:
+Endpoints:
 
 - `GET /healthz`
 - `GET /info`
 - `POST /generate`
 
-Pełny benchmark z logowaniem na żywo najwygodniej odpalić skryptem:
-
-```bash
-./scripts/run_ifeval_full.sh
-```
-
-Smoke:
-
-```bash
-./scripts/run_ifeval_full.sh --max-examples 10
-```
-
-## Gemma 4 E2B
-
-Jest też osobny MVP controllera dla `Gemma 4 E2B`, ale dla dense modelu, więc jako soft-prompt controller zamiast router-bias controller.
-
-Inference z bazową Gemmą:
-
-```bash
-uv run llm-enhance-gemma \
-  "Write a short joke about saving RAM."
-```
-
-Inference z controllerem:
-
-```bash
-uv run llm-enhance-gemma \
-  "Write a short joke about saving RAM." \
-  --controller-checkpoint artifacts/gemma-ifeval-synthetic-best.pt \
-  --controller-strength 0.05
-```
-
-Dataset pod instruction-following i twardsze formatowanie:
-
-```bash
-uv run python scripts/build_gemma_ifeval_synthetic.py
-```
-
-Generator zapisuje teraz 576 syntetycznych rekordów IFEval-style. Domyślny
-trening Gemmy używa `data/gemma_ifeval_synthetic_en.jsonl`,
-zapisuje checkpointy do `artifacts/gemma-ifeval-alignfix-small*.pt`, loguje MLflow
-i ma ustawione hparamy pod bieżący eksperyment IFEval. Wystarczy:
-
-```bash
-uv run python gemma_train_controller.py
-```
-
-Aktualne defaulty treningu: `--epochs 8`, `--learning-rate 5e-5`,
-`--grad-accum-steps 8`, `--warmup-ratio 0.03`, `--num-virtual-tokens 4`,
-`--controller-dim 64`, `--controller-hidden-dim 256`, `--controller-dropout 0.05`,
-`--max-response-tokens 512`, `--val-split 0.2`, `--patience 2` i `--mlflow`.
-
-MLflow zapisuje lokalną bazę runów domyślnie w `artifacts/mlflow.db`,
-a artefakty w `artifacts/mlflow-artifacts`. UI:
-
-```bash
-uv run mlflow ui --backend-store-uri sqlite:///artifacts/mlflow.db
-```
-
-Opis architektury MVP jest w:
-
-- `docs/gemma-e2b-controller.md`
-
-IFEval dla surowej Gemmy:
-
-```bash
-uv run llm-enhance-gemma-ifeval \
-  --base-only \
-  --output-dir artifacts/gemma-ifeval
-```
-
-W trakcie runu CLI loguje `elapsed`, średni czas na prompt i `eta`, a do katalogu wyniku zapisuje na bieżąco:
-
-- `responses.jsonl`
-- `progress.json`
-- `summary.partial.json`
-- `eval_results_strict.partial.jsonl`
-- `eval_results_loose.partial.jsonl`
-
-Domyślnie partial snapshot odświeża się co `10` promptów. Możesz to zmienić przez `--save-every`.
-
-IFEval `base vs controller` dla Gemmy:
-
-```bash
-uv run llm-enhance-gemma-ifeval
-```
-
 ## Current Limits
 
-- Ładowanie pełnych wag przy starcie procesu nadal trochę trwa, bo model nie jest trzymany w długowiecznym serwisie.
-- Maski attention są nadal referencyjne, nie specjalnie optymalizowane pod bardzo długi kontekst.
-- MVP controllera trenuje dane przykład po przykładzie, bez batching/padding pipeline.
+- The Gemma runtime is correctness-oriented, not optimized for throughput. On
+  MPS it uses a custom token-by-token loop and is much slower than a dedicated
+  inference backend such as MLX, llama.cpp, vLLM, or a vendor serving stack.
+- Loading full model weights still takes time because the basic CLI paths do not
+  keep a long-lived model service warm.
+- Attention masks and controller integration are reference implementations, not
+  optimized paths for very long context.
+- The controller training loop still processes examples one by one, without a
+  batching/padding pipeline.
+
+## License And Attribution
+
+This repository is licensed under Apache-2.0.
+
+`google/gemma-4-E2B-it` is published by Google DeepMind under Apache-2.0. If you
+redistribute model-derived artifacts, preserve the relevant license and
+attribution notices and do not present the work as endorsed by Google.

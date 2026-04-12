@@ -25,6 +25,7 @@ from .ifeval import (
     default_ifeval_input_path,
     evaluate_prompt_responses,
     persist_ifeval_progress,
+    write_json,
     write_prompt_responses,
 )
 
@@ -53,6 +54,24 @@ def ensure_nltk_punkt() -> None:
                 )
 
 
+def repeat_prompt(prompt: str, prompt_repeats: int) -> str:
+    if prompt_repeats <= 1:
+        return prompt
+    return "\n\n".join(prompt for _ in range(prompt_repeats))
+
+
+def build_response_record(
+    *,
+    prompt: str,
+    generation_prompt: str,
+    response: str,
+) -> dict[str, str]:
+    record = {"prompt": prompt, "response": response}
+    if generation_prompt != prompt:
+        record["generation_prompt"] = generation_prompt
+    return record
+
+
 @app.command()
 def run_ifeval(
     input_data_path: Annotated[
@@ -77,6 +96,10 @@ def run_ifeval(
         bool,
         typer.Option("--controller/--base-only", help="Run controller comparison in addition to base Gemma."),
     ] = True,
+    controller_only: Annotated[
+        bool,
+        typer.Option(help="Run only the controller variant and skip base generation."),
+    ] = False,
     controller_strength: Annotated[
         float, typer.Option(help="Multiplier applied to Gemma soft-prompt controller embeddings.")
     ] = DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
@@ -110,6 +133,15 @@ def run_ifeval(
     max_examples: Annotated[
         int | None, typer.Option(help="Optional limit for smoke runs.")
     ] = None,
+    prompt_repeats: Annotated[
+        int,
+        typer.Option(
+            help=(
+                "Number of times to repeat each IFEval prompt for generation. "
+                "Scoring still uses the original prompt."
+            )
+        ),
+    ] = 1,
     save_every: Annotated[
         int, typer.Option(help="How often to refresh partial eval artifacts and summaries.")
     ] = 10,
@@ -120,6 +152,10 @@ def run_ifeval(
         raise typer.BadParameter("--controller-strength must be greater than or equal to 0.")
     if save_every <= 0:
         raise typer.BadParameter("--save-every must be greater than 0.")
+    if prompt_repeats <= 0:
+        raise typer.BadParameter("--prompt-repeats must be greater than 0.")
+    if controller_only and not run_controller:
+        raise typer.BadParameter("--controller-only cannot be combined with --base-only.")
     if run_controller and not controller_checkpoint.exists():
         raise typer.BadParameter(
             f"Controller checkpoint not found at {controller_checkpoint}. "
@@ -133,6 +169,11 @@ def run_ifeval(
         inputs = inputs[:max_examples]
     if not inputs:
         raise typer.BadParameter("IFEval input set is empty.")
+    if prompt_repeats > 1:
+        status(
+            f"Repeating each IFEval prompt {prompt_repeats}x for generation; "
+            "scoring uses the original prompts."
+        )
 
     runtime = GemmaSoftPromptRuntime(
         model_id=model_id,
@@ -160,17 +201,38 @@ def run_ifeval(
     base_dir = output_dir / "base"
     controller_dir = output_dir / "controller"
     started_at = perf_counter()
+    run_config = {
+        "input_data_path": str(input_data_path),
+        "model_id": model_id,
+        "revision": revision,
+        "run_controller": run_controller,
+        "controller_only": controller_only,
+        "local_dir": local_dir,
+        "cache_dir": cache_dir,
+        "offline": offline,
+        "device": device,
+        "dtype": dtype,
+        "system_prompt": system_prompt,
+        "max_new_tokens": max_new_tokens,
+        "temperature": temperature,
+        "top_k": top_k,
+        "max_examples": max_examples,
+        "save_every": save_every,
+        "prompt_repeats": prompt_repeats,
+    }
 
-    persist_ifeval_progress(
-        inputs=inputs,
-        completed=0,
-        records=base_records,
-        prompt_to_response=base_prompt_to_response,
-        output_dir=base_dir,
-        total_examples=total_examples,
-        elapsed_seconds=0.0,
-        write_partial_eval=False,
-    )
+    if not controller_only:
+        persist_ifeval_progress(
+            inputs=inputs,
+            completed=0,
+            records=base_records,
+            prompt_to_response=base_prompt_to_response,
+            output_dir=base_dir,
+            total_examples=total_examples,
+            elapsed_seconds=0.0,
+            write_partial_eval=False,
+        )
+        write_json(base_dir / "run_config.json", run_config)
     if controller is not None:
         persist_ifeval_progress(
             inputs=inputs,
@@ -182,25 +244,42 @@ def run_ifeval(
             elapsed_seconds=0.0,
             write_partial_eval=False,
         )
+        write_json(
+            controller_dir / "run_config.json",
+            {
+                **run_config,
+                "controller_checkpoint": str(controller_checkpoint),
+                "controller_strength": controller_strength,
+            },
+        )
 
     for idx, inp in enumerate(inputs, start=1):
-        status(f"generating base {idx}/{total_examples}...")
-        base_response = runtime.generate(
-            prompt=inp.prompt,
-            system_prompt=system_prompt,
-            controller=None,
-            controller_strength=0.0,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            top_k=top_k,
-        )
-        base_records.append({"prompt": inp.prompt, "response": base_response})
-        base_prompt_to_response[inp.prompt] = base_response
+        generation_prompt = repeat_prompt(inp.prompt, prompt_repeats)
+        base_progress: dict | None = None
+        if not controller_only:
+            status(f"generating base {idx}/{total_examples}...")
+            base_response = runtime.generate(
+                prompt=generation_prompt,
+                system_prompt=system_prompt,
+                controller=None,
+                controller_strength=0.0,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_k=top_k,
+            )
+            base_records.append(
+                build_response_record(
+                    prompt=inp.prompt,
+                    generation_prompt=generation_prompt,
+                    response=base_response,
+                )
+            )
+            base_prompt_to_response[inp.prompt] = base_response
 
         if controller is not None:
             status(f"generating controller {idx}/{total_examples}...")
             controller_response = runtime.generate(
-                prompt=inp.prompt,
+                prompt=generation_prompt,
                 system_prompt=system_prompt,
                 controller=controller,
                 controller_strength=controller_strength,
@@ -209,23 +288,28 @@ def run_ifeval(
                 top_k=top_k,
             )
             controller_records.append(
-                {"prompt": inp.prompt, "response": controller_response}
+                build_response_record(
+                    prompt=inp.prompt,
+                    generation_prompt=generation_prompt,
+                    response=controller_response,
+                )
             )
             controller_prompt_to_response[inp.prompt] = controller_response
 
         elapsed_seconds = perf_counter() - started_at
         should_write_partial_eval = idx % save_every == 0 or idx == total_examples
 
-        base_progress = persist_ifeval_progress(
-            inputs=inputs,
-            completed=idx,
-            records=base_records,
-            prompt_to_response=base_prompt_to_response,
-            output_dir=base_dir,
-            total_examples=total_examples,
-            elapsed_seconds=elapsed_seconds,
-            write_partial_eval=should_write_partial_eval,
-        )
+        if not controller_only:
+            base_progress = persist_ifeval_progress(
+                inputs=inputs,
+                completed=idx,
+                records=base_records,
+                prompt_to_response=base_prompt_to_response,
+                output_dir=base_dir,
+                total_examples=total_examples,
+                elapsed_seconds=elapsed_seconds,
+                write_partial_eval=should_write_partial_eval,
+            )
         controller_progress: dict | None = None
         if controller is not None:
             controller_progress = persist_ifeval_progress(
@@ -240,7 +324,9 @@ def run_ifeval(
             )
 
         label = "generated"
-        if controller is not None:
+        if controller_only:
+            label += " for controller"
+        elif controller is not None:
             label += " for base+controller"
         progress_message = build_progress_message(
             completed=idx,
@@ -249,9 +335,10 @@ def run_ifeval(
             label=label,
         )
         if should_write_partial_eval:
-            progress_message += (
-                f" | base partial final {base_progress['partial_final_score']:.4f}"
-            )
+            if base_progress is not None:
+                progress_message += (
+                    f" | base partial final {base_progress['partial_final_score']:.4f}"
+                )
             if controller_progress is not None:
                 progress_message += (
                     " | controller partial final "
@@ -259,19 +346,22 @@ def run_ifeval(
                 )
         status(progress_message)
 
-    write_prompt_responses(base_dir / "responses.jsonl", base_records)
-    base_summary = evaluate_prompt_responses(
-        inputs,
-        base_prompt_to_response,
-        output_dir=base_dir,
-    )
-    status(
-        "base strict_prompt_accuracy="
-        f"{base_summary['strict']['prompt_accuracy']:.4f} "
-        "strict_instruction_accuracy="
-        f"{base_summary['strict']['instruction_accuracy']:.4f}"
-    )
+    base_summary: dict | None = None
+    if not controller_only:
+        write_prompt_responses(base_dir / "responses.jsonl", base_records)
+        base_summary = evaluate_prompt_responses(
+            inputs,
+            base_prompt_to_response,
+            output_dir=base_dir,
+        )
+        status(
+            "base strict_prompt_accuracy="
+            f"{base_summary['strict']['prompt_accuracy']:.4f} "
+            "strict_instruction_accuracy="
+            f"{base_summary['strict']['instruction_accuracy']:.4f}"
+        )
 
+    controller_summary: dict | None = None
     if controller is not None:
         write_prompt_responses(controller_dir / "responses.jsonl", controller_records)
         controller_summary = evaluate_prompt_responses(
@@ -296,25 +386,24 @@ def run_ifeval(
             f"{controller_summary['strict']['instruction_accuracy']:.4f}"
         )
 
-    persist_ifeval_progress(
-        inputs=inputs,
-        completed=total_examples,
-        records=base_records,
-        prompt_to_response=base_prompt_to_response,
-        output_dir=base_dir,
-        total_examples=total_examples,
-        elapsed_seconds=perf_counter() - started_at,
-        write_partial_eval=True,
-    )
-    status(
-        "final score summary: "
-        f"base={compute_final_score(base_summary):.4f}"
-        + (
-            ""
-            if controller is None
-            else f" controller={compute_final_score(controller_summary):.4f}"
+    if not controller_only:
+        persist_ifeval_progress(
+            inputs=inputs,
+            completed=total_examples,
+            records=base_records,
+            prompt_to_response=base_prompt_to_response,
+            output_dir=base_dir,
+            total_examples=total_examples,
+            elapsed_seconds=perf_counter() - started_at,
+            write_partial_eval=True,
         )
-    )
+
+    final_parts: list[str] = []
+    if base_summary is not None:
+        final_parts.append(f"base={compute_final_score(base_summary):.4f}")
+    if controller_summary is not None:
+        final_parts.append(f"controller={compute_final_score(controller_summary):.4f}")
+    status("final score summary: " + " ".join(final_parts))
 
 
 def run() -> None:
