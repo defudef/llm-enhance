@@ -4,18 +4,32 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
+license = "Apache-2.0"
 dependencies = [
+    "accelerate>=1.0.0",
+    "absl-py>=2.0.0",
     "huggingface-hub>=0.34.0",
+    "immutabledict>=4.2.0",
+    "langdetect>=1.0.9",
+    "mlflow>=3.0.0",
+    "nltk>=3.9.0",
     "numpy>=2.2.0",
     "rich>=13.0.0",
     "safetensors>=0.5.0",
+    "sentencepiece>=0.2.0",
     "tokenizers>=0.21.0",
     "torch>=2.6.0",
+    "transformers>=4.57.0",
     "typer>=0.16.0",
 ]
 
 [project.scripts]
+llm-enhance-gemma = "trinity.gemma_infer:run"
+llm-enhance-gemma-ifeval = "trinity.gemma_ifeval:run"
 llm-enhance = "trinity.cli:run"
+llm-enhance-ifeval = "trinity.ifeval:run"
+llm-enhance-remote = "trinity.remote:run"
+llm-enhance-serve = "trinity.server:run"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
@@ -25,4 +39,4 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["trinity"]
+packages = ["trinity", "instruction_following_eval"]

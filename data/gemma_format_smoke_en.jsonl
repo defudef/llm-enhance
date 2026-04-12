@@ -1,0 +1,272 @@
+{"prompt": "Return the same content in lowercase words only with no punctuation: CLEAN DATA HELPS TRAINING", "response": "clean data helps training", "category": "lowercase_rewrite"}
+{"prompt": "Answer with one lowercase word only. A vehicle with two wheels powered by pedaling.", "response": "bicycle", "category": "one_word"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: VALIDATION STILL MATTERS", "response": "validation still matters", "category": "lowercase_rewrite"}
+{"prompt": "Reply using digits only and nothing else. Compute 48 + 16.", "response": "64", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 11 * 11.", "response": "121", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is Python a snake and a programming language?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. A baby cat.", "response": "kitten", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: SERVER READY NOW", "response": "server ready now", "category": "lowercase_rewrite"}
+{"prompt": "Answer with one lowercase word only. The season after summer.", "response": "autumn", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: TRACK THE BEST EPOCH", "response": "track the best epoch", "category": "lowercase_rewrite"}
+{"prompt": "Reply with yes or no only. Is the Pacific Ocean smaller than a lake?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. A domesticated animal that barks.", "response": "dog", "category": "one_word"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 50 smaller than 5?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is the moon made of bread?", "response": "no", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize throughput estimate.", "response": "throughput seems steady", "category": "three_words"}
+{"prompt": "Reply with yes or no only. Is autumn a season?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is 3 multiplied by 3 equal to 9?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. A person who writes software.", "response": "programmer", "category": "one_word"}
+{"prompt": "Use exactly three lowercase words. Summarize memory usage.", "response": "memory stays moderate", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: SERVER READY NOW", "response": "server ready now", "category": "lowercase_rewrite"}
+{"prompt": "Reply with yes or no only. Is Python a snake and a programming language?", "response": "yes", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 33 + 9.", "response": "42", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for throughput estimate.", "response": "throughput seems steady", "category": "three_words"}
+{"prompt": "Answer only yes or no in lowercase. Is 50 smaller than 5?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is 17 divisible by 2?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. The meal eaten in the morning.", "response": "breakfast", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A device used to call people.", "response": "phone", "category": "one_word"}
+{"prompt": "Give only the numeric answer. Solve 19 + 24.", "response": "43", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. A scientist who studies stars and planets.", "response": "astronomer", "category": "one_word"}
+{"prompt": "Answer only yes or no in lowercase. Is Friday before Thursday?", "response": "no", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize cache behavior.", "response": "cache helps latency", "category": "three_words"}
+{"prompt": "Reply using digits only and nothing else. Compute 11 * 11.", "response": "121", "category": "digits_only"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: MODEL FEELS FASTER", "response": "model feels faster", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize server health.", "response": "server looks stable", "category": "three_words"}
+{"prompt": "Reply using digits only and nothing else. Compute 125 - 48.", "response": "77", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for release readiness.", "response": "release needs review", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: PLEASE CHECK LOGS", "response": "please check logs", "category": "lowercase_rewrite"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: FAST BUILD TODAY", "response": "fast build today", "category": "lowercase_rewrite"}
+{"prompt": "Answer with digits only. What is 63 - 21?", "response": "42", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 84 / 7?", "response": "12", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is June after May?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 19 + 24?", "response": "43", "category": "digits_only"}
+{"prompt": "Reply using digits only and nothing else. Compute 33 + 9.", "response": "42", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is water wet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is 0 less than 5?", "response": "yes", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 96 - 18.", "response": "78", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is 64 equal to 8 squared?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. The color of grass.", "response": "green", "category": "one_word"}
+{"prompt": "Reply using exactly one lowercase word. A tool used to write with ink.", "response": "pen", "category": "one_word"}
+{"prompt": "Give only the numeric answer. Solve 70 - 7.", "response": "63", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is water wet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for controller effect.", "response": "controller changes tone", "category": "three_words"}
+{"prompt": "Answer only yes or no in lowercase. Is 55 a prime number?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 45 + 27?", "response": "72", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. The season after summer.", "response": "autumn", "category": "one_word"}
+{"prompt": "Answer only yes or no in lowercase. Is the Pacific Ocean smaller than a lake?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is snow usually hot?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is ten plus two equal to twelve?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is a triangle a four-sided shape?", "response": "no", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize project status.", "response": "project is healthy", "category": "three_words"}
+{"prompt": "Answer with digits only. What is 144 / 12?", "response": "12", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 12 + 7?", "response": "19", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is 3 multiplied by 3 equal to 9?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 56 + 8?", "response": "64", "category": "digits_only"}
+{"prompt": "Use exactly three lowercase words. Summarize training plan.", "response": "train compare iterate", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. The natural satellite of Earth.", "response": "moon", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for server health.", "response": "server looks stable", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 108 / 9.", "response": "12", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for incident response.", "response": "triage starts now", "category": "three_words"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 17 divisible by 2?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is Saturn a planet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is a triangle a four-sided shape?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for feature scope.", "response": "scope feels contained", "category": "three_words"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 21 less than 19?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. A flying vehicle used for air travel.", "response": "airplane", "category": "one_word"}
+{"prompt": "Reply with yes or no only. Is 55 a prime number?", "response": "no", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 48 + 16.", "response": "64", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is Friday before Thursday?", "response": "no", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is a banana blue by default?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 17 + 25?", "response": "42", "category": "digits_only"}
+{"prompt": "Reply using digits only and nothing else. Compute 24 * 3.", "response": "72", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. A place where books are borrowed.", "response": "library", "category": "one_word"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 3 multiplied by 3 equal to 9?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 13 * 6.", "response": "78", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 17 + 25.", "response": "42", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for cache behavior.", "response": "cache helps latency", "category": "three_words"}
+{"prompt": "Use exactly three lowercase words. Summarize controller effect.", "response": "controller changes tone", "category": "three_words"}
+{"prompt": "Use exactly three lowercase words. Summarize code review.", "response": "review found issues", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 14 * 9.", "response": "126", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is June after May?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 14 an even number?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 96 - 18?", "response": "78", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is ten plus two equal to twelve?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. A red round fruit often used in pies.", "response": "apple", "category": "one_word"}
+{"prompt": "Answer only yes or no in lowercase. Is snow usually hot?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is 14 an even number?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is a banana blue by default?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for memory usage.", "response": "memory stays moderate", "category": "three_words"}
+{"prompt": "Answer with digits only. What is 14 + 15?", "response": "29", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is 21 less than 19?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. Frozen water falling from clouds.", "response": "snow", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A large body of salt water.", "response": "ocean", "category": "one_word"}
+{"prompt": "Reply using digits only and nothing else. Compute 84 / 7.", "response": "12", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for dataset quality.", "response": "dataset looks cleaner", "category": "three_words"}
+{"prompt": "Use exactly three lowercase words. Summarize benchmark progress.", "response": "benchmark keeps moving", "category": "three_words"}
+{"prompt": "Answer with digits only. What is 7 * 9?", "response": "63", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is water wet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 108 / 9.", "response": "12", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 48 + 16?", "response": "64", "category": "digits_only"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: CACHE REDUCES LATENCY", "response": "cache reduces latency", "category": "lowercase_rewrite"}
+{"prompt": "Use lowercase yes or no and nothing else. Is autumn a season?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. A tool used to write with ink.", "response": "pen", "category": "one_word"}
+{"prompt": "Reply using digits only and nothing else. Compute 63 - 21.", "response": "42", "category": "digits_only"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: WRITE THE SUMMARY FILE", "response": "write the summary file", "category": "lowercase_rewrite"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: SHIPPING NEEDS DISCIPLINE", "response": "shipping needs discipline", "category": "lowercase_rewrite"}
+{"prompt": "Reply using exactly one lowercase word. A planet known for its rings.", "response": "saturn", "category": "one_word"}
+{"prompt": "Answer only yes or no in lowercase. Is 0 less than 5?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. The star at the center of our solar system.", "response": "sun", "category": "one_word"}
+{"prompt": "Answer only yes or no in lowercase. Is 21 less than 19?", "response": "no", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 56 + 8.", "response": "64", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is snow usually hot?", "response": "no", "category": "yes_no"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: SHIPPING NEEDS DISCIPLINE", "response": "shipping needs discipline", "category": "lowercase_rewrite"}
+{"prompt": "Answer with digits only. What is 33 + 9?", "response": "42", "category": "digits_only"}
+{"prompt": "Reply using digits only and nothing else. Compute 18 * 4.", "response": "72", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is 1 greater than 10?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for prompt format.", "response": "format stays strict", "category": "three_words"}
+{"prompt": "Reply with yes or no only. Is 14 an even number?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 32 + 45.", "response": "77", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 108 / 9?", "response": "12", "category": "digits_only"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: KEEP OUTPUT SHORT", "response": "keep output short", "category": "lowercase_rewrite"}
+{"prompt": "Answer with digits only. What is 13 * 6?", "response": "78", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. A color made by mixing blue and yellow.", "response": "green", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for code review.", "response": "review found issues", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. The meal eaten in the morning.", "response": "breakfast", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A place where books are borrowed.", "response": "library", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for api latency.", "response": "latency feels lower", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 13 * 6.", "response": "78", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 0 less than 5?", "response": "yes", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 84 / 7.", "response": "12", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. The natural satellite of Earth.", "response": "moon", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: CLEAN DATA HELPS TRAINING", "response": "clean data helps training", "category": "lowercase_rewrite"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 100 greater than 12?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize branch status.", "response": "branch stays clean", "category": "three_words"}
+{"prompt": "Use lowercase yes or no and nothing else. Is the moon made of bread?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. A baby cat.", "response": "kitten", "category": "one_word"}
+{"prompt": "Use exactly three lowercase words. Summarize training quality.", "response": "loss is falling", "category": "three_words"}
+{"prompt": "Reply using digits only and nothing else. Compute 7 * 9.", "response": "63", "category": "digits_only"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: NEED MORE TESTS", "response": "need more tests", "category": "lowercase_rewrite"}
+{"prompt": "Reply using exactly one lowercase word. A person who writes software.", "response": "programmer", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A flying vehicle used for air travel.", "response": "airplane", "category": "one_word"}
+{"prompt": "Reply using digits only and nothing else. Compute 17 + 25.", "response": "42", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is a triangle a four-sided shape?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. Frozen water falling from clouds.", "response": "snow", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A color made by mixing blue and yellow.", "response": "green", "category": "one_word"}
+{"prompt": "Use exactly three lowercase words. Summarize team morale.", "response": "team needs coffee", "category": "three_words"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: VALIDATION STILL MATTERS", "response": "validation still matters", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize deployment risk.", "response": "risk remains moderate", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. A red round fruit often used in pies.", "response": "apple", "category": "one_word"}
+{"prompt": "Answer with one lowercase word only. A domesticated animal that barks.", "response": "dog", "category": "one_word"}
+{"prompt": "Give only the numeric answer. Solve 14 + 15.", "response": "29", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is 50 smaller than 5?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 144 / 12.", "response": "12", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 32 + 45?", "response": "77", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for training plan.", "response": "train compare iterate", "category": "three_words"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: MODEL FEELS FASTER", "response": "model feels faster", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize validation trend.", "response": "validation still matters", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: USE SMALLER BATCHES", "response": "use smaller batches", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize api latency.", "response": "latency feels lower", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: FAST BUILD TODAY", "response": "fast build today", "category": "lowercase_rewrite"}
+{"prompt": "Use lowercase yes or no and nothing else. Is Friday before Thursday?", "response": "no", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize release readiness.", "response": "release needs review", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. A building where planes land.", "response": "airport", "category": "one_word"}
+{"prompt": "Use exactly three lowercase words. Summarize model speed.", "response": "gemma feels quicker", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 12 + 7.", "response": "19", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. A large body of salt water.", "response": "ocean", "category": "one_word"}
+{"prompt": "Answer with digits only. What is 14 * 9?", "response": "126", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for next action.", "response": "run smaller smoke", "category": "three_words"}
+{"prompt": "Reply using exactly one lowercase word. A large animal with a trunk.", "response": "elephant", "category": "one_word"}
+{"prompt": "Answer with digits only. What is 11 * 11?", "response": "121", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is Warsaw in Poland?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 96 - 18.", "response": "78", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is 17 divisible by 2?", "response": "no", "category": "yes_no"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: BENCHMARKS TAKE TIME", "response": "benchmarks take time", "category": "lowercase_rewrite"}
+{"prompt": "Answer only yes or no in lowercase. Is 100 greater than 12?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. A planet known for its rings.", "response": "saturn", "category": "one_word"}
+{"prompt": "Reply using digits only and nothing else. Compute 70 - 7.", "response": "63", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 125 - 48?", "response": "77", "category": "digits_only"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: READ THE FIRST ERROR", "response": "read the first error", "category": "lowercase_rewrite"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: PLEASE CHECK LOGS", "response": "please check logs", "category": "lowercase_rewrite"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for benchmark progress.", "response": "benchmark keeps moving", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. A yellow long fruit peeled before eating.", "response": "banana", "category": "one_word"}
+{"prompt": "Reply using digits only and nothing else. Compute 45 + 27.", "response": "72", "category": "digits_only"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: READ THE FIRST ERROR", "response": "read the first error", "category": "lowercase_rewrite"}
+{"prompt": "Reply using digits only and nothing else. Compute 81 - 19.", "response": "62", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 32 + 45.", "response": "77", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 90 - 27.", "response": "63", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 64 equal to 8 squared?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is ten plus two equal to twelve?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 70 - 7?", "response": "63", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 24 * 3?", "response": "72", "category": "digits_only"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: CACHE REDUCES LATENCY", "response": "cache reduces latency", "category": "lowercase_rewrite"}
+{"prompt": "Give only the numeric answer. Solve 7 * 9.", "response": "63", "category": "digits_only"}
+{"prompt": "Reply using digits only and nothing else. Compute 56 + 8.", "response": "64", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is 1 greater than 10?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 12 + 7.", "response": "19", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for training quality.", "response": "loss is falling", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: WRITE THE SUMMARY FILE", "response": "write the summary file", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize debugging advice.", "response": "read first failure", "category": "three_words"}
+{"prompt": "Use lowercase yes or no and nothing else. Is Saturn a planet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with digits only. What is 90 - 27?", "response": "63", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is 64 equal to 8 squared?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using exactly one lowercase word. A device used to call people.", "response": "phone", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for project status.", "response": "project is healthy", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: TRACK THE BEST EPOCH", "response": "track the best epoch", "category": "lowercase_rewrite"}
+{"prompt": "Answer with one lowercase word only. A large animal with a trunk.", "response": "elephant", "category": "one_word"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 55 a prime number?", "response": "no", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is Python a snake and a programming language?", "response": "yes", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 14 + 15.", "response": "29", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is Warsaw in Poland?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize dataset quality.", "response": "dataset looks cleaner", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: KEEP OUTPUT SHORT", "response": "keep output short", "category": "lowercase_rewrite"}
+{"prompt": "Use exactly three lowercase words. Summarize prompt format.", "response": "format stays strict", "category": "three_words"}
+{"prompt": "Use exactly three lowercase words. Summarize next action.", "response": "run smaller smoke", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. The opposite of cold.", "response": "hot", "category": "one_word"}
+{"prompt": "Answer with digits only. What is 18 * 4?", "response": "72", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. A vehicle with two wheels powered by pedaling.", "response": "bicycle", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for branch status.", "response": "branch stays clean", "category": "three_words"}
+{"prompt": "Reply with yes or no only. Is Saturn a planet?", "response": "yes", "category": "yes_no"}
+{"prompt": "Use exactly three lowercase words. Summarize incident response.", "response": "triage starts now", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: COMPARE BASE AND CONTROLLER", "response": "compare base and controller", "category": "lowercase_rewrite"}
+{"prompt": "Give only the numeric answer. Solve 144 / 12.", "response": "12", "category": "digits_only"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 1 greater than 10?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is 100 greater than 12?", "response": "yes", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 81 - 19.", "response": "62", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. The day after Friday.", "response": "saturday", "category": "one_word"}
+{"prompt": "Reply using exactly one lowercase word. A building where planes land.", "response": "airport", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: NEED MORE TESTS", "response": "need more tests", "category": "lowercase_rewrite"}
+{"prompt": "Reply using digits only and nothing else. Compute 19 + 24.", "response": "43", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is autumn a season?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer only yes or no in lowercase. Is Warsaw in Poland?", "response": "yes", "category": "yes_no"}
+{"prompt": "Give only the numeric answer. Solve 63 - 21.", "response": "42", "category": "digits_only"}
+{"prompt": "Reply using exactly one lowercase word. The opposite of cold.", "response": "hot", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: COMPARE BASE AND CONTROLLER", "response": "compare base and controller", "category": "lowercase_rewrite"}
+{"prompt": "Use lowercase yes or no and nothing else. Is 99 an even number?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply with yes or no only. Is the moon made of bread?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. A scientist who studies stars and planets.", "response": "astronomer", "category": "one_word"}
+{"prompt": "Use exactly three lowercase words. Summarize test status.", "response": "tests remain green", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 18 * 4.", "response": "72", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 45 + 27.", "response": "72", "category": "digits_only"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for test status.", "response": "tests remain green", "category": "three_words"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for team morale.", "response": "team needs coffee", "category": "three_words"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for model speed.", "response": "gemma feels quicker", "category": "three_words"}
+{"prompt": "Give only the numeric answer. Solve 125 - 48.", "response": "77", "category": "digits_only"}
+{"prompt": "Answer with digits only. What is 81 - 19?", "response": "62", "category": "digits_only"}
+{"prompt": "Answer only yes or no in lowercase. Is 99 an even number?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 14 * 9.", "response": "126", "category": "digits_only"}
+{"prompt": "Use exactly three lowercase words. Summarize feature scope.", "response": "scope feels contained", "category": "three_words"}
+{"prompt": "Answer with one lowercase word only. The day after Friday.", "response": "saturday", "category": "one_word"}
+{"prompt": "Rewrite the text using lowercase only and no punctuation. Text: USE SMALLER BATCHES", "response": "use smaller batches", "category": "lowercase_rewrite"}
+{"prompt": "Answer only yes or no in lowercase. Is June after May?", "response": "yes", "category": "yes_no"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for debugging advice.", "response": "read first failure", "category": "three_words"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for deployment risk.", "response": "risk remains moderate", "category": "three_words"}
+{"prompt": "Reply with yes or no only. Is a banana blue by default?", "response": "no", "category": "yes_no"}
+{"prompt": "Reply using digits only and nothing else. Compute 90 - 27.", "response": "63", "category": "digits_only"}
+{"prompt": "Give only the numeric answer. Solve 24 * 3.", "response": "72", "category": "digits_only"}
+{"prompt": "Reply with yes or no only. Is 99 an even number?", "response": "no", "category": "yes_no"}
+{"prompt": "Use lowercase yes or no and nothing else. Is the Pacific Ocean smaller than a lake?", "response": "no", "category": "yes_no"}
+{"prompt": "Answer with one lowercase word only. The star at the center of our solar system.", "response": "sun", "category": "one_word"}
+{"prompt": "Reply using exactly one lowercase word. The color of grass.", "response": "green", "category": "one_word"}
+{"prompt": "Reply using exactly one lowercase word. A yellow long fruit peeled before eating.", "response": "banana", "category": "one_word"}
+{"prompt": "Answer with exactly three lowercase words and nothing else. Give a short status for validation trend.", "response": "validation still matters", "category": "three_words"}
+{"prompt": "Return the same content in lowercase words only with no punctuation: BENCHMARKS TAKE TIME", "response": "benchmarks take time", "category": "lowercase_rewrite"}
