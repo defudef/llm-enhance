@@ -24,12 +24,10 @@ dependencies = [
 ]
 
 [project.scripts]
-llm-enhance-gemma = "trinity.gemma_infer:run"
-llm-enhance-gemma-ifeval = "trinity.gemma_ifeval:run"
-llm-enhance = "trinity.cli:run"
-llm-enhance-ifeval = "trinity.ifeval:run"
-llm-enhance-remote = "trinity.remote:run"
-llm-enhance-serve = "trinity.server:run"
+llm-enhance = "llm_enhance.gemma_infer:run"
+llm-enhance-ifeval = "llm_enhance.gemma_ifeval:run"
+llm-enhance-gemma = "llm_enhance.gemma_infer:run"
+llm-enhance-gemma-ifeval = "llm_enhance.gemma_ifeval:run"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
@@ -39,4 +37,4 @@ build-backend = "hatchling.build"
 package = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["trinity", "instruction_following_eval"]
+packages = ["llm_enhance", "instruction_following_eval"]

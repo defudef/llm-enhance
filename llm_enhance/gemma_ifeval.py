@@ -19,7 +19,7 @@ from .gemma_runtime import (
     GemmaSoftPromptRuntime,
     load_gemma_controller_checkpoint,
 )
-from .ifeval import (
+from .ifeval_common import (
     build_progress_message,
     compute_final_score,
     default_ifeval_input_path,

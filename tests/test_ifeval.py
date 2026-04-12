@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from instruction_following_eval import evaluation_lib
-from trinity.ifeval import build_accuracy_report, persist_ifeval_progress
+from llm_enhance.ifeval_common import build_accuracy_report, persist_ifeval_progress
 
 
 class IFEvalTests(unittest.TestCase):

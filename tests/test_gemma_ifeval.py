@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from trinity.gemma_ifeval import app, build_response_record, repeat_prompt  # noqa: E402
+from llm_enhance.gemma_ifeval import app, build_response_record, repeat_prompt  # noqa: E402
 from typer.testing import CliRunner  # noqa: E402
 
 

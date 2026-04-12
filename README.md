@@ -3,9 +3,7 @@
 Experimental controllers and evaluation harnesses for local LLM inference.
 
 The current focus is a lightweight soft-prompt controller for
-`google/gemma-4-E2B-it`, evaluated with IFEval. The repository also contains an
-older custom PyTorch runtime for `arcee-ai/Trinity-Nano-Preview` and a
-router-bias controller for that MoE model.
+`google/gemma-4-E2B-it`, evaluated with IFEval.
 
 Status: experimental. The code is intended to make controller experiments,
 generated responses, and IFEval comparisons reproducible. It should not be read
@@ -34,7 +32,7 @@ uv sync
 ## Gemma 4 E2B
 
 This is the main active experiment. `Gemma 4 E2B` is a dense model, so this path
-uses a soft-prompt controller instead of the Trinity router-bias controller.
+uses a soft-prompt controller.
 
 Run base Gemma:
 
@@ -170,201 +168,6 @@ Full-run results from the current experiment:
 In this run, prompt repetition produced most of the lift: `base 2x` improved
 `+2.52pp` over `base 1x`, while `controller 2x` improved only another `+0.37pp`
 over `base 2x`. The controller alone was nearly flat at `+0.20pp`.
-
-## Trinity Runtime
-
-The repository still includes a minimal custom PyTorch runtime for
-`arcee-ai/Trinity-Nano-Preview`, without using `transformers` as the model
-execution engine. The runtime code lives under `trinity/`.
-
-Run Trinity:
-
-```bash
-uv run llm-enhance \
-  "Napisz krotkie hello world w Pythonie." \
-  --max-new-tokens 16
-```
-
-Run Trinity with the router-bias controller:
-
-```bash
-uv run llm-enhance \
-  "Ile to 17 * 19?" \
-  --with-controller \
-  --controller-strength 0.2 \
-  --offline
-```
-
-Use `--raw-prompt` to pass an already formatted prompt. By default, the backend
-is selected in this order: `cuda -> mps -> cpu`. `--dtype auto` selects
-`bfloat16` on CUDA when supported, otherwise `float16`; `float16` on MPS; and
-`float32` on CPU. The generated answer streams token by token to `stdout`, while
-status messages go to `stderr`.
-
-Use offline mode once the model is cached locally:
-
-```bash
-uv run llm-enhance "Siema" --offline
-```
-
-Use a project-local model directory:
-
-```bash
-uv run llm-enhance "Siema" --local-dir .models/trinity-nano --offline
-```
-
-The compatibility wrapper still works:
-
-```bash
-uv run python main.py "Hello"
-```
-
-## Trinity Controller
-
-The Trinity controller is a small router-bias controller for the MoE runtime:
-
-- it reads prompt embeddings,
-- pools the prompt,
-- produces `num_moe_layers x num_experts` router biases,
-- and applies those biases before `topk` routing.
-
-Train it on the default `data/sarcastic_en.jsonl` dataset:
-
-```bash
-uv run python train_controller.py --offline --epochs 1
-```
-
-Use a custom JSONL dataset:
-
-```bash
-uv run python train_controller.py data/smoke.jsonl --offline
-```
-
-Dataset format:
-
-```json
-{"prompt":"Ile to 2+2?","response":"4"}
-{"prompt":"Zaplanuj prosty weekend w Krakowie","response":"Sobota: ..."}
-```
-
-Example longer training run:
-
-```bash
-uv run python train_controller.py \
-  --offline \
-  --epochs 1 \
-  --output-path artifacts/controller-sarcastic-pl-last.pt \
-  --best-output-path artifacts/controller-sarcastic-pl-best.pt
-```
-
-Faster experimental loop:
-
-```bash
-uv run python train_controller.py \
-  --offline \
-  --epochs 10 \
-  --dtype float16 \
-  --controller-bias-scale 0.2 \
-  --learning-rate 1e-5 \
-  --router-bias-l2 0 \
-  --max-response-tokens 48 \
-  --eval-every 3
-```
-
-`--dtype float16` speeds up the base model on MPS, `--max-response-tokens`
-shortens training targets, and `--eval-every` reduces validation cost. If NaNs
-return, switch back from `--dtype float16` to the default `float32`.
-
-Run inference with a trained Trinity controller:
-
-```bash
-uv run python infer_controller.py \
-  "Ile to 17 * 19?" \
-  --controller-strength 0.2 \
-  --offline
-```
-
-Evaluate base vs controller:
-
-```bash
-uv run python eval_controller.py data/smoke.jsonl --offline
-uv run python eval_controller.py data/smoke.jsonl \
-  --controller-checkpoint artifacts/controller-best.pt \
-  --offline \
-  --results-path artifacts/eval.jsonl
-```
-
-## Trinity IFEval
-
-Run the older Trinity IFEval runner on the base model:
-
-```bash
-uv run llm-enhance-ifeval \
-  --offline \
-  --output-dir artifacts/ifeval-base
-```
-
-Run base vs controller:
-
-```bash
-uv run llm-enhance-ifeval \
-  --offline \
-  --controller-checkpoint artifacts/controller-best.pt \
-  --output-dir artifacts/ifeval-controller
-```
-
-Useful flags:
-
-- `--max-examples 25` for a smoke run
-- `--max-new-tokens 512` or more for longer IFEval answers
-- `--system-prompt` to benchmark a specific system instruction
-
-The helper script runs the full Trinity IFEval with live logging:
-
-```bash
-./scripts/run_ifeval_full.sh
-```
-
-Smoke run:
-
-```bash
-./scripts/run_ifeval_full.sh --max-examples 10
-```
-
-## Model Server
-
-The server mode keeps the base model loaded and can cache controller checkpoints
-by path.
-
-Start the server:
-
-```bash
-uv run llm-enhance-serve --offline --port 8000
-```
-
-Call the base model:
-
-```bash
-uv run llm-enhance-remote \
-  "Ile to 17 * 19?" \
-  --server-url http://127.0.0.1:8000
-```
-
-Call the model with a controller:
-
-```bash
-uv run llm-enhance-remote \
-  "Ile to 17 * 19?" \
-  --server-url http://127.0.0.1:8000 \
-  --controller-checkpoint artifacts/controller-best.pt \
-  --controller-strength 0.2
-```
-
-Endpoints:
-
-- `GET /healthz`
-- `GET /info`
-- `POST /generate`
 
 ## Current Limits
 
