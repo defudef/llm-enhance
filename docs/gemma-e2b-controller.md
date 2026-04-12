@@ -5,12 +5,11 @@
 Build a separate controller for `Gemma 4 E2B` without modifying the base model
 weights.
 
-This cannot reuse the current Trinity controller directly:
+The controller should steer Gemma through its input path:
 
-- the current controller is a `router-bias` controller for MoE routing
-- `Gemma 4 E2B` is a dense model, not a router-driven MoE model
-- the controller therefore needs to steer the model through the input path or
-  hidden states, not through expert selection
+- `Gemma 4 E2B` is a dense model
+- the controller can add learnable virtual-token embeddings without changing
+  the frozen base weights
 
 ## Proposed MVP
 
@@ -27,7 +26,6 @@ High-level flow:
 
 This is the lowest-risk dense-controller design because:
 
-- it does not depend on MoE internals
 - it is compatible with `inputs_embeds` in Hugging Face models
 - it keeps the base model frozen
 - it is small enough to train cheaply
@@ -35,9 +33,9 @@ This is the lowest-risk dense-controller design because:
 ## Why This Fits Gemma 4 E2B
 
 `Gemma 4 E2B` is presented by Google as a dense model in the Gemma 4 family,
-with the smaller `E` models using parameter-efficient embedding mechanisms
-instead of MoE routing. That means the right steering point is the prompt/input
-path, not the expert router.
+with the smaller `E` models using parameter-efficient embedding mechanisms.
+That makes the prompt/input path the most direct steering point for this
+experiment.
 
 ## Controller Shape
 
@@ -95,7 +93,7 @@ Start with standard next-token loss on the target response:
 
 - freeze base Gemma
 - train only the controller
-- ignore prompt tokens in labels, same idea as current Trinity controller
+- ignore prompt tokens in labels
 
 Optional regularization:
 
@@ -130,7 +128,7 @@ The first implementation step in this repository is:
 
 - add a model-agnostic `PromptPoolingSoftPromptController`
 - add a helper that prepends controller embeddings to `inputs_embeds`
-- keep Gemma integration separate from Trinity runtime
+- keep Gemma integration isolated from model-specific runtime assumptions
 
 This keeps the controller reusable even if we later test:
 

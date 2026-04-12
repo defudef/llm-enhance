@@ -12,7 +12,7 @@ from .dense_controller import (
     PromptPoolingSoftPromptControllerConfig,
     prepend_soft_prompt,
 )
-from .runtime import resolve_device, resolve_dtype
+from .device import resolve_device, resolve_dtype
 
 
 DEFAULT_GEMMA_MODEL_ID = "google/gemma-4-E2B-it"

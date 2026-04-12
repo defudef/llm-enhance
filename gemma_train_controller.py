@@ -21,12 +21,12 @@ from rich.progress import (
 )
 from torch.optim import AdamW
 
-from trinity.dense_controller import (
+from llm_enhance.dense_controller import (
     PromptPoolingSoftPromptController,
     PromptPoolingSoftPromptControllerConfig,
     prepend_soft_prompt,
 )
-from trinity.gemma_runtime import (
+from llm_enhance.gemma_runtime import (
     DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH,
     DEFAULT_GEMMA_IFEVAL_CONTROLLER_PATH,
     DEFAULT_GEMMA_IFEVAL_SYNTHETIC_DATASET_PATH,

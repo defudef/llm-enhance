@@ -6,7 +6,7 @@ import torch
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from trinity.dense_controller import (  # noqa: E402
+from llm_enhance.dense_controller import (  # noqa: E402
     PromptPoolingSoftPromptController,
     PromptPoolingSoftPromptControllerConfig,
     prepend_soft_prompt,

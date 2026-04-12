@@ -6,7 +6,7 @@ import torch
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from trinity.gemma_runtime import (  # noqa: E402
+from llm_enhance.gemma_runtime import (  # noqa: E402
     GemmaSoftPromptRuntime,
     build_messages,
     build_training_example,
