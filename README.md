@@ -154,6 +154,11 @@ uv run llm-enhance-gemma-ifeval \
   --output-dir artifacts/gemma-ifeval
 ```
 
+IFEval uses `--backend auto` by default: CUDA uses PyTorch, macOS/MPS uses MLX
+for base generation and last-token controllers, and CPU falls back to PyTorch.
+Soft-prompt controller runs still use PyTorch because that path needs prefix
+embedding hooks that are not implemented in the MLX runtime yet.
+
 Run base vs controller:
 
 ```bash
@@ -169,6 +174,17 @@ uv run llm-enhance-gemma-ifeval \
   --controller-checkpoint artifacts/gemma-ifeval-alignfix-small-best.pt \
   --controller-strength 0.05 \
   --output-dir artifacts/gemma-ifeval-controller-1x
+```
+
+Run the prompt-repeat distillation controller on a 50-prompt IFEval prefix:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --controller-only \
+  --last-token-controller-checkpoint artifacts/gemma-prompt-repeat-distill-best.pt \
+  --controller-strength 0.5 \
+  --max-examples 50 \
+  --output-dir artifacts/gemma-ifeval-prompt-repeat-distill-50
 ```
 
 Run raw Gemma with each prompt repeated twice at generation time:
@@ -231,6 +247,70 @@ Tracked baseline summaries for the base `1x` and `2x` runs are stored in
 compare against them without rerunning the base model each time.
 Prompt-repeat distillation results are tracked in
 `benchmarks/gemma_prompt_repeat_distillation.json`.
+
+## Runtime Speed Benchmark
+
+Use this when comparing the current PyTorch/MPS runner against faster Mac
+backends. The benchmark uses a fixed prefix of the official IFEval prompt order
+and writes `artifacts/gemma-speed-bench/summary.json`.
+
+By default, `--backends auto` chooses PyTorch on CUDA, MLX on macOS with MPS, and
+PyTorch on CPU as the final fallback. Pass explicit backends when comparing
+multiple runtimes in one run.
+
+Run the local Ollama/GGUF baseline:
+
+```bash
+uv run llm-enhance-gemma-speed-bench \
+  --backends ollama \
+  --ollama-model gemma4:e2b \
+  --max-prompts 8 \
+  --max-new-tokens 512
+```
+
+Ollama thinking tokens are disabled by default with `--no-ollama-think`, matching
+the PyTorch chat-template path. Use `--ollama-think` only for a separate thinking
+benchmark.
+
+Run the current PyTorch/MPS baseline:
+
+```bash
+uv run llm-enhance-gemma-speed-bench \
+  --backends pytorch \
+  --device mps \
+  --dtype float16 \
+  --max-prompts 8 \
+  --max-new-tokens 512
+```
+
+Run MLX if `mlx_lm` is installed in the active Python environment:
+
+```bash
+uv run llm-enhance-gemma-speed-bench \
+  --backends mlx \
+  --mlx-model google/gemma-4-E2B-it \
+  --max-prompts 8 \
+  --max-new-tokens 512
+```
+
+Run all available backends and keep error records for missing runtimes:
+
+```bash
+uv run llm-enhance-gemma-speed-bench \
+  --backends pytorch,ollama,mlx \
+  --max-prompts 8 \
+  --max-new-tokens 512
+```
+
+The summary records wall-clock seconds per prompt, generated-token throughput,
+backend-reported Ollama prompt/eval timing when available, and a hook matrix for
+future steering work:
+
+| Backend | Hidden states | Logits before sampling | KV continuation | Steering note |
+| --- | --- | --- | --- | --- |
+| PyTorch/MPS | yes | yes | yes | Slow but exposes the hooks used by the current controller path. |
+| Ollama/GGUF | no public API | no public API | server-managed only | Good speed baseline, poor target for hidden-state steering. |
+| MLX | possible with Python integration | possible with custom generation loop | yes | Best Mac-native candidate if we need both speed and custom steering. |
 
 ## Current Limits
 

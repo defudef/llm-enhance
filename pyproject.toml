@@ -21,6 +21,7 @@ dependencies = [
     "torch>=2.6.0",
     "transformers>=4.57.0",
     "typer>=0.16.0",
+    "mlx-lm>=0.31.2 ; sys_platform == 'darwin'",
 ]
 
 [project.scripts]
@@ -28,6 +29,7 @@ llm-enhance = "llm_enhance.gemma_infer:run"
 llm-enhance-ifeval = "llm_enhance.gemma_ifeval:run"
 llm-enhance-gemma = "llm_enhance.gemma_infer:run"
 llm-enhance-gemma-ifeval = "llm_enhance.gemma_ifeval:run"
+llm-enhance-gemma-speed-bench = "llm_enhance.gemma_speed_bench:run"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
