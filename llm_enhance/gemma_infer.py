@@ -11,7 +11,9 @@ from .gemma_runtime import (
     DEFAULT_GEMMA_MODEL_ID,
     GemmaSoftPromptRuntime,
     load_gemma_controller_checkpoint,
+    load_last_token_controller_checkpoint,
 )
+from .last_token_controller import LastTokenHiddenStateController
 
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
 
@@ -28,8 +30,12 @@ def infer(
     controller_checkpoint: Annotated[
         Path | None, typer.Option(help="Optional soft-prompt controller checkpoint.")
     ] = None,
+    last_token_controller_checkpoint: Annotated[
+        Path | None,
+        typer.Option(help="Optional last-token hidden-state controller checkpoint."),
+    ] = None,
     controller_strength: Annotated[
-        float, typer.Option(help="Multiplier applied to Gemma soft-prompt controller embeddings.")
+        float, typer.Option(help="Multiplier applied to the loaded Gemma controller.")
     ] = 1.0,
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
@@ -63,6 +69,17 @@ def infer(
         raise typer.BadParameter(
             f"Controller checkpoint not found at {controller_checkpoint}."
         )
+    if (
+        last_token_controller_checkpoint is not None
+        and not last_token_controller_checkpoint.exists()
+    ):
+        raise typer.BadParameter(
+            f"Last-token controller checkpoint not found at {last_token_controller_checkpoint}."
+        )
+    if controller_checkpoint is not None and last_token_controller_checkpoint is not None:
+        raise typer.BadParameter(
+            "--controller-checkpoint cannot be combined with --last-token-controller-checkpoint."
+        )
     if controller_strength < 0:
         raise typer.BadParameter("--controller-strength must be greater than or equal to 0.")
 
@@ -76,9 +93,16 @@ def infer(
         dtype=dtype,
     )
     controller: PromptPoolingSoftPromptController | None = None
+    last_token_controller: LastTokenHiddenStateController | None = None
     if controller_checkpoint is not None:
         controller = load_gemma_controller_checkpoint(
             controller_checkpoint,
+            device=runtime.device,
+            dtype=torch.float32,
+        )
+    if last_token_controller_checkpoint is not None:
+        last_token_controller = load_last_token_controller_checkpoint(
+            last_token_controller_checkpoint,
             device=runtime.device,
             dtype=torch.float32,
         )
@@ -88,6 +112,7 @@ def infer(
         system_prompt=system_prompt,
         controller=controller,
         controller_strength=controller_strength,
+        last_token_controller=last_token_controller,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
         top_k=top_k,

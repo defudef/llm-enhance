@@ -1,0 +1,480 @@
+{"prompt": "Extract metrics from this note and return compact JSON: Run log: examples 541, device mps, dtype float16, status complete.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 4 dataset shards, multiply by 28, then subtract 6.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: an API cache reduces latency but sometimes serves stale records.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Rust implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise JavaScript function to normalize user-provided file paths safely. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 5, 24, and 17 in the training batches scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Experiment: prompt-repeat, model Gemma, metric final_score, value 0.7616.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: order=1842, currency=PLN, total=129.50.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The model output ignored the requested JSON schema.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a lighthouse for lost packets.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The first run finished with better loose instruction accuracy, but strict prompt accuracy barely moved.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for researchers about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Run log: examples 541, device mps, dtype float16, status complete.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to audit a README for stale instructions.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a robot that audits README files.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a startup can optimize onboarding or improve reliability this sprint.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Run log: examples 541, device mps, dtype float16, status complete.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise TypeScript function to parse a JSONL file and count rows by category. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: host=api-2, status=degraded, latency_ms=420.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The bug appears when paths are relative and the process starts outside the repository root.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: task=cleanup, branch=work-next, owner=research.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: I like the idea, but the current loss may be too weak.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: order=1842, currency=PLN, total=129.50.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to run a model evaluation overnight.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: The model loads correctly, but generation is slower than expected.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a train powered by benchmark results.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 7 notebooks, multiply by 13, then subtract 4.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: name=Ana, city=Krakow, score=91.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: sensor=temp, value=22.4, unit=C.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The user interview showed confusion around setup, naming, and where benchmark artifacts are written.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: task=cleanup, branch=work-next, owner=research.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The bug appears when paths are relative and the process starts outside the repository root.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 11 groups of 7 daily commits and 19 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: an API cache reduces latency but sometimes serves stale records.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of education, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Dataset: diverse prompts, categories 12, split validation 20 percent.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: I like the idea, but the current loss may be too weak.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a mobile app gets faster but battery use increases.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The training data accidentally copied the benchmark format.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 5 training batches, add 24, then remove 17. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of medicine, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for product managers about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a mobile app gets faster but battery use increases.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The new dataset is intentionally broad and should not mirror any single benchmark distribution.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The API returned 500 three times after deploy.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Experiment: prompt-repeat, model Gemma, metric final_score, value 0.7616.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: name=Ana, city=Krakow, score=91.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to run a model evaluation overnight.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Meeting: 2026-04-12, owner: Marta, decision: rerun base 2x.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 9 warehouse boxes, add 15, then remove 8. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a library where functions sleep.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a startup can optimize onboarding or improve reliability this sprint.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The new dataset is intentionally broad and should not mirror any single benchmark distribution.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a calendar that negotiates deadlines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to run a model evaluation overnight.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The team removed a service because the local CLI path made the server redundant.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to debug a slow local inference loop.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Run log: examples 541, device mps, dtype float16, status complete.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for product managers about a slow inference pipeline.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Meeting: 2026-04-12, owner: Marta, decision: rerun base 2x.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: order=1842, currency=PLN, total=129.50.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for investors about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The training data accidentally copied the benchmark format.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of climate science, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for researchers about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a skeptical paragraph for backend engineers about a small open-source release.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned JavaScript implementation for retry a flaky HTTP request with exponential backoff; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of education, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The user asked for a concise Polish explanation.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a skeptical paragraph for researchers about a cleanup that removed legacy code.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: file=summary.json, rows=541, passed=true.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to ship a minimal experiment without overbuilding.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 6 groups of 14 evaluation runs and 10 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: name=Ana, city=Krakow, score=91.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: model=gemma, split=validation, final=0.7616.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of finance, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of law, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned TypeScript implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: host=api-2, status=degraded, latency_ms=420.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: file=summary.json, rows=541, passed=true.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a researcher sees an accuracy gain but the sample is only 80 examples.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 11, 7, and 19 in the daily commits scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 12 GPU hours, multiply by 9, then subtract 5.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Incident 418: service api, severity high, started 09:42 UTC.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a lighthouse for lost packets.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to prepare a small open-source PR.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: The dataset should be broad rather than optimized for one benchmark.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: order=1842, currency=PLN, total=129.50.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 7 notebooks, add 13, then remove 4. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a train powered by benchmark results.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for backend engineers about a slow inference pipeline.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of medicine, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: an API cache reduces latency but sometimes serves stale records.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for new users about an experiment that needs replication.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The model output ignored the requested JSON schema.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The model output ignored the requested JSON schema.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: Please keep the answer short and avoid marketing language.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: model=gemma, split=validation, final=0.7616.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for new users about a slow inference pipeline.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 6, 14, and 10 in the evaluation runs scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Rust function to compute rolling averages for a metric series. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a robot that audits README files.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a robot that audits README files.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a model that learns from echoes.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Python function to stream a large file without loading it all into memory. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to audit a README for stale instructions.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned SQL implementation for format a compact progress message for a CLI; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of climate science, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a model benchmark improves after the prompt is repeated.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 4 teams each use 28 dataset shards; 6 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to design a diverse prompt dataset.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The run improved accuracy, but the sample is too small.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: model=gemma, split=validation, final=0.7616.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of law, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The experiment generated many artifacts, but only the final summaries should be compared.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a compiler that writes postcards.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Incident 418: service api, severity high, started 09:42 UTC.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The model output ignored the requested JSON schema.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: Please keep the answer short and avoid marketing language.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to migrate a package namespace.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a calendar that negotiates deadlines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to debug a slow local inference loop.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to migrate a package namespace.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: Can you update the README before opening the PR?", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The API returned 500 three times after deploy.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to prepare a small open-source PR.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: host=api-2, status=degraded, latency_ms=420.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: The training objective should be easy to inspect.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: sensor=temp, value=22.4, unit=C.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a team can ship either a small fix today or a larger refactor next week.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a warehouse has two packing lines and one line starts failing intermittently.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The report says the model is useful for drafting but needs careful factual verification.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The first run finished with better loose instruction accuracy, but strict prompt accuracy barely moved.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: The benchmark is still running, but the partial result is useful.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of security, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of design, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: The dataset should be broad rather than optimized for one benchmark.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of medicine, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 18 support tickets, add 6, then remove 11. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: The prompt was repeated twice during generation.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Incident 418: service api, severity high, started 09:42 UTC.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: name=Ana, city=Krakow, score=91.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a mobile app gets faster but battery use increases.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for investors about an experiment that needs replication.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of education, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 11 daily commits, multiply by 7, then subtract 19.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to prepare a small open-source PR.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The first run finished with better loose instruction accuracy, but strict prompt accuracy barely moved.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of law, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Customer: Nova Labs, plan enterprise, renewal 2026-06-30.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a teacher has to choose between a quiz and a longer project.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a team can ship either a small fix today or a larger refactor next week.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise JavaScript function to retry a flaky HTTP request with exponential backoff. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a train powered by benchmark results.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The user interview showed confusion around setup, naming, and where benchmark artifacts are written.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of design, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: user=leo, plan=pro, renewal=2026-05-01.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The report says the model is useful for drafting but needs careful factual verification.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 7 teams each use 13 notebooks; 4 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The bug appears when paths are relative and the process starts outside the repository root.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for investors about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 4, 28, and 6 in the dataset shards scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to migrate a package namespace.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: The prompt was repeated twice during generation.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: This branch removes old code and keeps the Gemma path.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 9 groups of 15 warehouse boxes and 8 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Invoice A-17: vendor Northwind, amount 320 USD, due Friday.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The experiment generated many artifacts, but only the final summaries should be compared.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 4 groups of 28 dataset shards and 6 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The run improved accuracy, but the sample is too small.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a compiler that writes postcards.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned SQL implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of design, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 9 teams each use 15 warehouse boxes; 8 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 5 training batches, multiply by 24, then subtract 17.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a team can ship either a small fix today or a larger refactor next week.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Experiment: prompt-repeat, model Gemma, metric final_score, value 0.7616.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of medicine, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: model=gemma, split=validation, final=0.7616.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Dataset: diverse prompts, categories 12, split validation 20 percent.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for backend engineers about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of operations, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: I like the idea, but the current loss may be too weak.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: The training objective should be easy to inspect.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for investors about a benchmark result that improved after prompt repetition.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Bash implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: The model loads correctly, but generation is slower than expected.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a robot that audits README files.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: Please keep the answer short and avoid marketing language.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Invoice A-17: vendor Northwind, amount 320 USD, due Friday.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: This branch removes old code and keeps the Gemma path.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: sensor=temp, value=22.4, unit=C.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a train powered by benchmark results.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for backend engineers about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a calendar that negotiates deadlines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The run improved accuracy, but the sample is too small.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to compare two benchmark variants.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: user=leo, plan=pro, renewal=2026-05-01.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of security, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: host=api-2, status=degraded, latency_ms=420.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a garden grown from log lines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The deployment reduced median latency while p95 stayed high during cache misses.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to compare two benchmark variants.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a skeptical paragraph for backend engineers about a benchmark result that improved after prompt repetition.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to ship a minimal experiment without overbuilding.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a teacher has to choose between a quiz and a longer project.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to ship a minimal experiment without overbuilding.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned TypeScript implementation for deduplicate records while preserving order; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for backend engineers about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to debug a slow local inference loop.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to compare two benchmark variants.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned JavaScript implementation for normalize user-provided file paths safely; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for backend engineers about a benchmark result that improved after prompt repetition.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The deployment reduced median latency while p95 stayed high during cache misses.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: Please keep the answer short and avoid marketing language.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: The benchmark is still running, but the partial result is useful.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to compare two benchmark variants.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a lighthouse for lost packets.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a robot that audits README files.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Task: update docs, assignee Leo, branch chore-cleanup.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: This branch removes old code and keeps the Gemma path.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned JavaScript implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: The training objective should be easy to inspect.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for product managers about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Python function to compute rolling averages for a metric series. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to design a diverse prompt dataset.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a skeptical paragraph for backend engineers about an experiment that needs replication.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The bug appears when paths are relative and the process starts outside the repository root.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to migrate a package namespace.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to audit a README for stale instructions.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a teacher has to choose between a quiz and a longer project.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a teacher has to choose between a quiz and a longer project.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 11 teams each use 7 daily commits; 19 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 18 support tickets, multiply by 6, then subtract 11.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of operations, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to audit a README for stale instructions.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Run log: examples 541, device mps, dtype float16, status complete.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The report says the model is useful for drafting but needs careful factual verification.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: The model loads correctly, but generation is slower than expected.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 4 dataset shards, add 28, then remove 6. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for investors about a model evaluation caveat.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a researcher sees an accuracy gain but the sample is only 80 examples.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Invoice A-17: vendor Northwind, amount 320 USD, due Friday.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Meeting: 2026-04-12, owner: Marta, decision: rerun base 2x.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for investors about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 6 evaluation runs, multiply by 14, then subtract 10.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a compiler that writes postcards.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a garden grown from log lines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of finance, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of medicine, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Task: update docs, assignee Leo, branch chore-cleanup.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of education, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The deployment reduced median latency while p95 stayed high during cache misses.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: This branch removes old code and keeps the Gemma path.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for investors about a cleanup that removed legacy code.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: The benchmark is still running, but the partial result is useful.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Spanish: The benchmark is still running, but the partial result is useful.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The experiment generated many artifacts, but only the final summaries should be compared.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise TypeScript function to compute rolling averages for a metric series. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Rust implementation for format a compact progress message for a CLI; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: I like the idea, but the current loss may be too weak.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a compiler that writes postcards.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The API returned 500 three times after deploy.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for product managers about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for investors about a small open-source release.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: model=gemma, split=validation, final=0.7616.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: The dataset should be broad rather than optimized for one benchmark.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: Can you update the README before opening the PR?", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The checkout flow is confusing on mobile.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Bash implementation for normalize user-provided file paths safely; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Task: update docs, assignee Leo, branch chore-cleanup.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a library where functions sleep.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for researchers about a dataset quality concern.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: Can you update the README before opening the PR?", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: user=leo, plan=pro, renewal=2026-05-01.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 5 teams each use 24 training batches; 17 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to ship a minimal experiment without overbuilding.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: task=cleanup, branch=work-next, owner=research.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The deployment reduced median latency while p95 stayed high during cache misses.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Invoice A-17: vendor Northwind, amount 320 USD, due Friday.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a researcher sees an accuracy gain but the sample is only 80 examples.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The user interview showed confusion around setup, naming, and where benchmark artifacts are written.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of finance, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Python implementation for format a compact progress message for a CLI; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Go implementation for compute rolling averages for a metric series; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for investors about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to debug a slow local inference loop.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned JavaScript implementation for format a compact progress message for a CLI; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of security, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned TypeScript implementation for format a compact progress message for a CLI; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Rust implementation for deduplicate records while preserving order; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The deployment reduced median latency while p95 stayed high during cache misses.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a model benchmark improves after the prompt is repeated.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: The model loads correctly, but generation is slower than expected.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Go function to compute rolling averages for a metric series. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to migrate a package namespace.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of operations, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of climate science, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The report says the model is useful for drafting but needs careful factual verification.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a model that learns from echoes.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of security, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of finance, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The API returned 500 three times after deploy.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 18, 6, and 11 in the support tickets scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for new users about a cleanup that removed legacy code.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for researchers about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: an API cache reduces latency but sometimes serves stale records.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The training data accidentally copied the benchmark format.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The run improved accuracy, but the sample is too small.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The training data accidentally copied the benchmark format.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a startup can optimize onboarding or improve reliability this sprint.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of design, separate facts from assumptions for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Incident 418: service api, severity high, started 09:42 UTC.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of law, identify a safe next step for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of law, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of finance, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to run a model evaluation overnight.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: file=summary.json, rows=541, passed=true.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of climate science, list what an expert should verify for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Meeting: 2026-04-12, owner: Marta, decision: rerun base 2x.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a team can ship either a small fix today or a larger refactor next week.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Task: update docs, assignee Leo, branch chore-cleanup.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The training data accidentally copied the benchmark format.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for investors about a model evaluation caveat.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: order=1842, currency=PLN, total=129.50.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to prepare a small open-source PR.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 6 teams each use 14 evaluation runs; 10 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one hour plan to ship a minimal experiment without overbuilding.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a warehouse has two packing lines and one line starts failing intermittently.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Bash implementation for parse a JSONL file and count rows by category; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a plainspoken paragraph for backend engineers about a model evaluation caveat.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into CSV: file=summary.json, rows=541, passed=true.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: Please keep the answer short and avoid marketing language.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The user asked for a concise Polish explanation.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Python function to deduplicate records while preserving order. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Python implementation for parse a JSONL file and count rows by category; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Python function to validate an email address without external services. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a skeptical paragraph for new users about a benchmark result that improved after prompt repetition.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The model output ignored the requested JSON schema.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a team can ship either a small fix today or a larger refactor next week.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned SQL implementation for stream a large file without loading it all into memory; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 12, 9, and 5 in the GPU hours scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Bash function to retry a flaky HTTP request with exponential backoff. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 12 teams each use 9 GPU hours; 5 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Experiment: prompt-repeat, model Gemma, metric final_score, value 0.7616.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: The dataset should be broad rather than optimized for one benchmark.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: sensor=temp, value=22.4, unit=C.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Python function to retry a flaky HTTP request with exponential backoff. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a startup can optimize onboarding or improve reliability this sprint.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a warehouse has two packing lines and one line starts failing intermittently.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Bash implementation for stream a large file without loading it all into memory; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for product managers about an experiment that needs replication.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The new dataset is intentionally broad and should not mirror any single benchmark distribution.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Swift function to format a compact progress message for a CLI. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Task: update docs, assignee Leo, branch chore-cleanup.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Dataset: diverse prompts, categories 12, split validation 20 percent.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a model benchmark improves after the prompt is repeated.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, rank three next actions: a researcher sees an accuracy gain but the sample is only 80 examples.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into Polish: The training objective should be easy to inspect.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: The checkout flow is confusing on mobile.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a mobile app gets faster but battery use increases.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Estimate and then calculate exactly: 18 teams each use 6 support tickets; 11 are unused.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a model that learns from echoes.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a garden grown from log lines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, explain what evidence would change the decision: a model benchmark improves after the prompt is repeated.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Customer: Nova Labs, plan enterprise, renewal 2026-06-30.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a warehouse has two packing lines and one line starts failing intermittently.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: an API cache reduces latency but sometimes serves stale records.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: file=summary.json, rows=541, passed=true.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 5 groups of 24 training batches and 17 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The first run finished with better loose instruction accuracy, but strict prompt accuracy barely moved.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 12 groups of 9 GPU hours and 5 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of security, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a library where functions sleep.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The first run finished with better loose instruction accuracy, but strict prompt accuracy barely moved.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a mobile app gets faster but battery use increases.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, give a decision with two caveats: a researcher sees an accuracy gain but the sample is only 80 examples.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of operations, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The user asked for a concise Polish explanation.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned SQL implementation for parse a JSONL file and count rows by category; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a lighthouse for lost packets.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of design, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Meeting: 2026-04-12, owner: Marta, decision: rerun base 2x.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The run improved accuracy, but the sample is too small.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The checkout flow is confusing on mobile.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Customer: Nova Labs, plan enterprise, renewal 2026-06-30.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for product managers about a cleanup that removed legacy code.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 7, 13, and 4 in the notebooks scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: risk, decision, action, context. Text: I like the idea, but the current loss may be too weak.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a calendar that negotiates deadlines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: name=Ana, city=Krakow, score=91.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The team removed a service because the local CLI path made the server redundant.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The user interview showed confusion around setup, naming, and where benchmark artifacts are written.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The checkout flow is confusing on mobile.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: Can you update the README before opening the PR?", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of climate science, explain the main uncertainty for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Swift function to validate an email address without external services. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a calendar that negotiates deadlines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to run a model evaluation overnight.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a startup can optimize onboarding or improve reliability this sprint.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for backend engineers about a slow inference pipeline.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: Can you update the README before opening the PR?", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 6 evaluation runs, add 14, then remove 10. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: host=api-2, status=degraded, latency_ms=420.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 11 daily commits, add 7, then remove 19. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for investors about a small open-source release.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract ids and status from this note and return compact JSON: Invoice A-17: vendor Northwind, amount 320 USD, due Friday.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Compute the final count. Start with 9 warehouse boxes, multiply by 15, then subtract 8.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Customer: Nova Labs, plan enterprise, renewal 2026-06-30.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical a weekend plan to prepare a small open-source PR.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The team removed a service because the local CLI path made the server redundant.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a garden grown from log lines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: urgent, normal, low-priority. Text: The checkout flow is confusing on mobile.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract amounts from this note and return compact JSON: Customer: Nova Labs, plan enterprise, renewal 2026-06-30.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to design a diverse prompt dataset.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into key bullet points: user=leo, plan=pro, renewal=2026-05-01.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Experiment: prompt-repeat, model Gemma, metric final_score, value 0.7616.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into JSON: task=cleanup, branch=work-next, owner=research.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract assignee and branch from this note and return compact JSON: Dataset: diverse prompts, categories 12, split validation 20 percent.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 18 groups of 6 support tickets and 11 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: The prompt was repeated twice during generation.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: The prompt was repeated twice during generation.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise game item description about a compiler that writes postcards.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The experiment generated many artifacts, but only the final summaries should be compared.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise scene outline about a library where functions sleep.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of operations, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract date and owner from this note and return compact JSON: Dataset: diverse prompts, categories 12, split validation 20 percent.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: The prompt was repeated twice during generation.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into a Markdown table: task=cleanup, branch=work-next, owner=research.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: user=leo, plan=pro, renewal=2026-05-01.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The experiment generated many artifacts, but only the final summaries should be compared.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "In the context of education, rewrite for a non-specialist for a short research note.", "category": "domain_explanation", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: We should compare the controller only after the full run finishes.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned SQL implementation for normalize user-provided file paths safely; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into German: The model loads correctly, but generation is slower than expected.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to debug a slow local inference loop.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: bug, task, question, observation. Text: The user asked for a concise Polish explanation.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a library where functions sleep.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: research, engineering, product, support. Text: The user asked for a concise Polish explanation.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The new dataset is intentionally broad and should not mirror any single benchmark distribution.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a lighthouse for lost packets.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a decision note: The user interview showed confusion around setup, naming, and where benchmark artifacts are written.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Swift implementation for stream a large file without loading it all into memory; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise Swift function to retry a flaky HTTP request with exponential backoff. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as three bullets: The team removed a service because the local CLI path made the server redundant.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise SQL function to retry a flaky HTTP request with exponential backoff. Include one edge case.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Extract metrics from this note and return compact JSON: Incident 418: service api, severity high, started 09:42 UTC.", "category": "extraction", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise dialogue about a model that learns from echoes.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a risk summary: The new dataset is intentionally broad and should not mirror any single benchmark distribution.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into French: This branch removes old code and keeps the Gemma path.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical two sprints plan to design a diverse prompt dataset.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for backend engineers about a benchmark result that improved after prompt repetition.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into plain English: The benchmark is still running, but the partial result is useful.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "A log shows 7 groups of 13 notebooks and 4 extra. What is the total?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a direct paragraph for new users about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a model that learns from echoes.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Review this planned Go implementation for validate an email address without external services; list likely bugs first.", "category": "code", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Classify the text into one of these labels: positive, negative, mixed, neutral. Text: The API returned 500 three times after deploy.", "category": "classification", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The team removed a service because the local CLI path made the server redundant.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise micro-story about a train powered by benchmark results.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Give the arithmetic expression and answer for 9, 15, and 8 in the warehouse boxes scenario.", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, identify the strongest counterargument: a model benchmark improves after the prompt is repeated.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a teacher has to choose between a quiz and a longer project.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as one sentence: The bug appears when paths are relative and the process starts outside the repository root.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Summarize this as a title and subtitle: The report says the model is useful for drafting but needs careful factual verification.", "category": "summarization", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a friendly paragraph for investors about a slow inference pipeline.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Translate or rewrite into technical English: The dataset should be broad rather than optimized for one benchmark.", "category": "translation_rewrite", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Solve the word problem step by step: We have 12 GPU hours, add 9, then remove 5. What remains?", "category": "math_word_problem", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Convert this record into YAML: sensor=temp, value=22.4, unit=C.", "category": "data_transform", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to design a diverse prompt dataset.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a concise poem about a garden grown from log lines.", "category": "creative", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one week plan to audit a README for stale instructions.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Write a formal paragraph for investors about a tradeoff between speed and accuracy.", "category": "writing", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "For this situation, list the most likely tradeoffs: a warehouse has two packing lines and one line starts failing intermittently.", "category": "reasoning", "source": "prompt_repeat_diverse_v1"}
+{"prompt": "Make a practical one day plan to compare two benchmark variants.", "category": "planning", "source": "prompt_repeat_diverse_v1"}
