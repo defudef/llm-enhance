@@ -11,6 +11,11 @@ import typer
 from instruction_following_eval import evaluation_lib
 
 from .dense_controller import PromptPoolingSoftPromptController
+from .gemma_backend import resolve_backend
+from .gemma_mlx_runtime import (
+    GemmaMlxRuntime,
+    load_mlx_last_token_controller_checkpoint,
+)
 from .gemma_runtime import (
     DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH,
     DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
@@ -109,6 +114,10 @@ def run_ifeval(
     controller_strength: Annotated[
         float, typer.Option(help="Multiplier applied to the loaded Gemma controller.")
     ] = DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
+    backend: Annotated[
+        str,
+        typer.Option(help="Generation backend where possible: auto, mlx, or pytorch."),
+    ] = "auto",
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
     ] = None,
@@ -183,6 +192,23 @@ def run_ifeval(
             f"Last-token controller checkpoint not found at {last_token_controller_checkpoint}."
         )
 
+    base_backend = (
+        None
+        if controller_only
+        else resolve_backend(
+            backend,
+            needs_controller_hooks=False,
+        )
+    )
+    controller_backend = (
+        resolve_backend(
+            backend,
+            needs_controller_hooks=last_token_controller_checkpoint is None,
+        )
+        if run_controller
+        else None
+    )
+
     ensure_nltk_punkt()
 
     inputs = evaluation_lib.read_prompt_list(input_data_path)
@@ -196,32 +222,66 @@ def run_ifeval(
             "scoring uses the original prompts."
         )
 
-    runtime = GemmaSoftPromptRuntime(
-        model_id=model_id,
-        revision=revision,
-        cache_dir=cache_dir,
-        local_dir=local_dir,
-        offline=offline,
-        device=device,
-        dtype=dtype,
-    )
+    torch_runtime: GemmaSoftPromptRuntime | None = None
+    base_mlx_runtime: GemmaMlxRuntime | None = None
+    controller_mlx_runtime: GemmaMlxRuntime | None = None
+    if base_backend == "mlx":
+        status("Loading Gemma MLX runtime for base generation...")
+        base_mlx_runtime = GemmaMlxRuntime(
+            model_id=model_id,
+            revision=revision,
+            local_dir=local_dir,
+        )
+    if controller_backend == "mlx":
+        if base_mlx_runtime is None:
+            status("Loading Gemma MLX runtime for controller generation...")
+            controller_mlx_runtime = GemmaMlxRuntime(
+                model_id=model_id,
+                revision=revision,
+                local_dir=local_dir,
+            )
+        else:
+            controller_mlx_runtime = base_mlx_runtime
+    if base_backend == "pytorch" or controller_backend == "pytorch":
+        torch_runtime = GemmaSoftPromptRuntime(
+            model_id=model_id,
+            revision=revision,
+            cache_dir=cache_dir,
+            local_dir=local_dir,
+            offline=offline,
+            device=device,
+            dtype=dtype,
+        )
     controller: PromptPoolingSoftPromptController | None = None
     last_token_controller: LastTokenHiddenStateController | None = None
+    mlx_last_token_controller = None
     if run_controller:
         if last_token_controller_checkpoint is None:
+            if torch_runtime is None:
+                raise RuntimeError("Soft-prompt controller generation requires PyTorch.")
             status("Loading Gemma soft-prompt controller checkpoint...")
             controller = load_gemma_controller_checkpoint(
                 controller_checkpoint,
-                device=runtime.device,
+                device=torch_runtime.device,
                 dtype=torch.float32,
             )
         else:
-            status("Loading Gemma last-token hidden-state controller checkpoint...")
-            last_token_controller = load_last_token_controller_checkpoint(
-                last_token_controller_checkpoint,
-                device=runtime.device,
-                dtype=torch.float32,
-            )
+            if controller_backend == "mlx":
+                status("Loading Gemma MLX last-token controller checkpoint...")
+                mlx_last_token_controller = load_mlx_last_token_controller_checkpoint(
+                    last_token_controller_checkpoint
+                )
+            else:
+                if torch_runtime is None:
+                    raise RuntimeError(
+                        "Last-token controller generation requires a runtime."
+                    )
+                status("Loading Gemma last-token hidden-state controller checkpoint...")
+                last_token_controller = load_last_token_controller_checkpoint(
+                    last_token_controller_checkpoint,
+                    device=torch_runtime.device,
+                    dtype=torch.float32,
+                )
 
     total_examples = len(inputs)
     base_records: list[dict[str, str]] = []
@@ -246,6 +306,9 @@ def run_ifeval(
                 else "soft_prompt"
             )
         ),
+        "requested_backend": backend,
+        "base_backend": base_backend,
+        "controller_backend": controller_backend,
         "local_dir": local_dir,
         "cache_dir": cache_dir,
         "offline": offline,
@@ -272,7 +335,13 @@ def run_ifeval(
             write_partial_eval=False,
         )
         write_json(base_dir / "run_config.json", run_config)
-    if controller is not None or last_token_controller is not None:
+    has_controller_generation = (
+        controller is not None
+        or last_token_controller is not None
+        or mlx_last_token_controller is not None
+    )
+
+    if has_controller_generation:
         persist_ifeval_progress(
             inputs=inputs,
             completed=0,
@@ -299,15 +368,28 @@ def run_ifeval(
         base_progress: dict | None = None
         if not controller_only:
             status(f"generating base {idx}/{total_examples}...")
-            base_response = runtime.generate(
-                prompt=generation_prompt,
-                system_prompt=system_prompt,
-                controller=None,
-                controller_strength=0.0,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_k=top_k,
-            )
+            if base_backend == "mlx":
+                if base_mlx_runtime is None:
+                    raise RuntimeError("MLX base runtime was not initialized.")
+                base_response = base_mlx_runtime.generate(
+                    prompt=generation_prompt,
+                    system_prompt=system_prompt,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    top_k=top_k,
+                )
+            else:
+                if torch_runtime is None:
+                    raise RuntimeError("PyTorch base runtime was not initialized.")
+                base_response = torch_runtime.generate(
+                    prompt=generation_prompt,
+                    system_prompt=system_prompt,
+                    controller=None,
+                    controller_strength=0.0,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    top_k=top_k,
+                )
             base_records.append(
                 build_response_record(
                     prompt=inp.prompt,
@@ -317,18 +399,35 @@ def run_ifeval(
             )
             base_prompt_to_response[inp.prompt] = base_response
 
-        if controller is not None or last_token_controller is not None:
+        if has_controller_generation:
             status(f"generating controller {idx}/{total_examples}...")
-            controller_response = runtime.generate(
-                prompt=generation_prompt,
-                system_prompt=system_prompt,
-                controller=controller,
-                controller_strength=controller_strength,
-                last_token_controller=last_token_controller,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_k=top_k,
-            )
+            if mlx_last_token_controller is not None:
+                if controller_mlx_runtime is None:
+                    raise RuntimeError("MLX controller runtime was not initialized.")
+                controller_response = (
+                    controller_mlx_runtime.generate_with_last_token_controller(
+                        prompt=generation_prompt,
+                        system_prompt=system_prompt,
+                        controller=mlx_last_token_controller,
+                        controller_strength=controller_strength,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        top_k=top_k,
+                    )
+                )
+            else:
+                if torch_runtime is None:
+                    raise RuntimeError("Controller generation requires PyTorch.")
+                controller_response = torch_runtime.generate(
+                    prompt=generation_prompt,
+                    system_prompt=system_prompt,
+                    controller=controller,
+                    controller_strength=controller_strength,
+                    last_token_controller=last_token_controller,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    top_k=top_k,
+                )
             controller_records.append(
                 build_response_record(
                     prompt=inp.prompt,
@@ -353,7 +452,7 @@ def run_ifeval(
                 write_partial_eval=should_write_partial_eval,
             )
         controller_progress: dict | None = None
-        if controller is not None or last_token_controller is not None:
+        if has_controller_generation:
             controller_progress = persist_ifeval_progress(
                 inputs=inputs,
                 completed=idx,
@@ -368,7 +467,7 @@ def run_ifeval(
         label = "generated"
         if controller_only:
             label += " for controller"
-        elif controller is not None or last_token_controller is not None:
+        elif has_controller_generation:
             label += " for base+controller"
         progress_message = build_progress_message(
             completed=idx,
@@ -404,7 +503,7 @@ def run_ifeval(
         )
 
     controller_summary: dict | None = None
-    if controller is not None or last_token_controller is not None:
+    if has_controller_generation:
         write_prompt_responses(controller_dir / "responses.jsonl", controller_records)
         controller_summary = evaluate_prompt_responses(
             inputs,

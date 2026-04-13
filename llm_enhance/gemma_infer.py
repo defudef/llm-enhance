@@ -7,6 +7,11 @@ import torch
 import typer
 
 from .dense_controller import PromptPoolingSoftPromptController
+from .gemma_backend import resolve_backend
+from .gemma_mlx_runtime import (
+    GemmaMlxRuntime,
+    load_mlx_last_token_controller_checkpoint,
+)
 from .gemma_runtime import (
     DEFAULT_GEMMA_MODEL_ID,
     GemmaSoftPromptRuntime,
@@ -37,6 +42,10 @@ def infer(
     controller_strength: Annotated[
         float, typer.Option(help="Multiplier applied to the loaded Gemma controller.")
     ] = 1.0,
+    backend: Annotated[
+        str,
+        typer.Option(help="Inference backend: auto, mlx, or pytorch."),
+    ] = "auto",
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
     ] = None,
@@ -82,6 +91,41 @@ def infer(
         )
     if controller_strength < 0:
         raise typer.BadParameter("--controller-strength must be greater than or equal to 0.")
+
+    needs_controller_hooks = controller_checkpoint is not None
+    selected_backend = resolve_backend(
+        backend,
+        needs_controller_hooks=needs_controller_hooks,
+    )
+    if selected_backend == "mlx":
+        runtime = GemmaMlxRuntime(
+            model_id=model_id,
+            revision=revision,
+            local_dir=local_dir,
+        )
+        if last_token_controller_checkpoint is not None:
+            mlx_controller = load_mlx_last_token_controller_checkpoint(
+                last_token_controller_checkpoint
+            )
+            text = runtime.generate_with_last_token_controller(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                controller=mlx_controller,
+                controller_strength=controller_strength,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_k=top_k,
+            )
+        else:
+            text = runtime.generate(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_k=top_k,
+            )
+        typer.echo(text)
+        return
 
     runtime = GemmaSoftPromptRuntime(
         model_id=model_id,
