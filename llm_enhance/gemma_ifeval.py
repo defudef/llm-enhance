@@ -18,7 +18,9 @@ from .gemma_runtime import (
     DEFAULT_GEMMA_MODEL_ID,
     GemmaSoftPromptRuntime,
     load_gemma_controller_checkpoint,
+    load_last_token_controller_checkpoint,
 )
+from .last_token_controller import LastTokenHiddenStateController
 from .ifeval_common import (
     build_progress_message,
     compute_final_score,
@@ -92,6 +94,10 @@ def run_ifeval(
         Path,
         typer.Option(help="Soft-prompt controller checkpoint used unless --base-only is set."),
     ] = DEFAULT_GEMMA_IFEVAL_BEST_CONTROLLER_PATH,
+    last_token_controller_checkpoint: Annotated[
+        Path | None,
+        typer.Option(help="Optional last-token hidden-state controller checkpoint."),
+    ] = None,
     run_controller: Annotated[
         bool,
         typer.Option("--controller/--base-only", help="Run controller comparison in addition to base Gemma."),
@@ -101,7 +107,7 @@ def run_ifeval(
         typer.Option(help="Run only the controller variant and skip base generation."),
     ] = False,
     controller_strength: Annotated[
-        float, typer.Option(help="Multiplier applied to Gemma soft-prompt controller embeddings.")
+        float, typer.Option(help="Multiplier applied to the loaded Gemma controller.")
     ] = DEFAULT_GEMMA_IFEVAL_CONTROLLER_STRENGTH,
     cache_dir: Annotated[
         str | None, typer.Option(help="Optional Hugging Face cache directory.")
@@ -156,10 +162,25 @@ def run_ifeval(
         raise typer.BadParameter("--prompt-repeats must be greater than 0.")
     if controller_only and not run_controller:
         raise typer.BadParameter("--controller-only cannot be combined with --base-only.")
-    if run_controller and not controller_checkpoint.exists():
+    if last_token_controller_checkpoint is not None and not run_controller:
+        raise typer.BadParameter(
+            "--last-token-controller-checkpoint cannot be combined with --base-only."
+        )
+    if (
+        run_controller
+        and last_token_controller_checkpoint is None
+        and not controller_checkpoint.exists()
+    ):
         raise typer.BadParameter(
             f"Controller checkpoint not found at {controller_checkpoint}. "
             "Train the controller first or pass --base-only."
+        )
+    if (
+        last_token_controller_checkpoint is not None
+        and not last_token_controller_checkpoint.exists()
+    ):
+        raise typer.BadParameter(
+            f"Last-token controller checkpoint not found at {last_token_controller_checkpoint}."
         )
 
     ensure_nltk_punkt()
@@ -185,13 +206,22 @@ def run_ifeval(
         dtype=dtype,
     )
     controller: PromptPoolingSoftPromptController | None = None
+    last_token_controller: LastTokenHiddenStateController | None = None
     if run_controller:
-        status("Loading Gemma soft-prompt controller checkpoint...")
-        controller = load_gemma_controller_checkpoint(
-            controller_checkpoint,
-            device=runtime.device,
-            dtype=torch.float32,
-        )
+        if last_token_controller_checkpoint is None:
+            status("Loading Gemma soft-prompt controller checkpoint...")
+            controller = load_gemma_controller_checkpoint(
+                controller_checkpoint,
+                device=runtime.device,
+                dtype=torch.float32,
+            )
+        else:
+            status("Loading Gemma last-token hidden-state controller checkpoint...")
+            last_token_controller = load_last_token_controller_checkpoint(
+                last_token_controller_checkpoint,
+                device=runtime.device,
+                dtype=torch.float32,
+            )
 
     total_examples = len(inputs)
     base_records: list[dict[str, str]] = []
@@ -207,6 +237,15 @@ def run_ifeval(
         "revision": revision,
         "run_controller": run_controller,
         "controller_only": controller_only,
+        "controller_kind": (
+            None
+            if not run_controller
+            else (
+                "last_token_hidden_state"
+                if last_token_controller_checkpoint is not None
+                else "soft_prompt"
+            )
+        ),
         "local_dir": local_dir,
         "cache_dir": cache_dir,
         "offline": offline,
@@ -233,7 +272,7 @@ def run_ifeval(
             write_partial_eval=False,
         )
         write_json(base_dir / "run_config.json", run_config)
-    if controller is not None:
+    if controller is not None or last_token_controller is not None:
         persist_ifeval_progress(
             inputs=inputs,
             completed=0,
@@ -248,7 +287,9 @@ def run_ifeval(
             controller_dir / "run_config.json",
             {
                 **run_config,
-                "controller_checkpoint": str(controller_checkpoint),
+                "controller_checkpoint": str(
+                    last_token_controller_checkpoint or controller_checkpoint
+                ),
                 "controller_strength": controller_strength,
             },
         )
@@ -276,13 +317,14 @@ def run_ifeval(
             )
             base_prompt_to_response[inp.prompt] = base_response
 
-        if controller is not None:
+        if controller is not None or last_token_controller is not None:
             status(f"generating controller {idx}/{total_examples}...")
             controller_response = runtime.generate(
                 prompt=generation_prompt,
                 system_prompt=system_prompt,
                 controller=controller,
                 controller_strength=controller_strength,
+                last_token_controller=last_token_controller,
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_k=top_k,
@@ -311,7 +353,7 @@ def run_ifeval(
                 write_partial_eval=should_write_partial_eval,
             )
         controller_progress: dict | None = None
-        if controller is not None:
+        if controller is not None or last_token_controller is not None:
             controller_progress = persist_ifeval_progress(
                 inputs=inputs,
                 completed=idx,
@@ -326,7 +368,7 @@ def run_ifeval(
         label = "generated"
         if controller_only:
             label += " for controller"
-        elif controller is not None:
+        elif controller is not None or last_token_controller is not None:
             label += " for base+controller"
         progress_message = build_progress_message(
             completed=idx,
@@ -362,7 +404,7 @@ def run_ifeval(
         )
 
     controller_summary: dict | None = None
-    if controller is not None:
+    if controller is not None or last_token_controller is not None:
         write_prompt_responses(controller_dir / "responses.jsonl", controller_records)
         controller_summary = evaluate_prompt_responses(
             inputs,

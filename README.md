@@ -88,6 +88,62 @@ uv run mlflow ui --backend-store-uri sqlite:///artifacts/mlflow.db
 
 The controller design note is in `docs/gemma-e2b-controller.md`.
 
+## Prompt Repeat Distillation
+
+This experiment tries to compress the `--prompt-repeats 2` effect into a
+last-token hidden-state controller. It uses a prompt-only dataset that is
+intentionally broad rather than IFEval-shaped.
+
+Build the diverse prompt dataset:
+
+```bash
+uv run python scripts/build_gemma_prompt_repeat_dataset.py
+```
+
+The generator writes `data/gemma_prompt_repeat_diverse_en.jsonl` with balanced
+categories such as reasoning, code, planning, summarization, extraction, and
+creative writing.
+
+Train a controller to map the final hidden state after the original prompt
+toward the final hidden state after the doubled prompt:
+
+```bash
+uv run python gemma_train_prompt_repeat_controller.py
+```
+
+The trainer precomputes the frozen Gemma source/target hidden-state pairs once,
+then trains the controller in batches. The current defaults use a 20-epoch run,
+a 256/1024 controller MLP, zero dropout, and a zero-initialized output projection
+so the controller starts as an identity residual.
+
+The training objective is:
+
+```text
+H_last(prompt) -> H_last(prompt + "\n\n" + prompt)
+```
+
+At inference time the controller transforms the final hidden state from the
+single prompt before first-token logits are computed, then generation continues
+normally without doubling the prompt text. This keeps the experiment separate
+from the IFEval-response training path.
+
+Evaluate the trained controller without prompt repetition:
+
+```bash
+uv run llm-enhance-gemma-ifeval \
+  --controller-only \
+  --last-token-controller-checkpoint artifacts/gemma-prompt-repeat-distill-best.pt \
+  --controller-strength 0.5 \
+  --output-dir artifacts/gemma-ifeval-prompt-repeat-distill
+```
+
+The full IFEval run for the v2 controller at strength `0.5` matched base 1x
+overall (`0.7326`) but did not reproduce the prompt-repeat lift from base 2x
+(`0.7579`) or the soft-controller 2x run (`0.7616`). The result suggests that
+last-token hidden-state distillation is a useful steering sanity check, but the
+`H_last(prompt) -> H_last(prompt x2)` objective is not enough on its own for the
+full benchmark.
+
 ## Gemma IFEval
 
 Run raw Gemma on the full IFEval dataset:
@@ -164,10 +220,17 @@ Full-run results from the current experiment:
 | Controller 1x | 0.7346 | +0.20pp | 0.6765 | 0.7650 | 0.7079 | 0.7890 |
 | Base 2x | 0.7579 | +2.52pp | 0.6987 | 0.7854 | 0.7357 | 0.8118 |
 | Controller 2x | 0.7616 | +2.89pp | 0.7043 | 0.7818 | 0.7449 | 0.8153 |
+| Prompt-repeat distill v2 1x | 0.7326 | +0.00pp | 0.6802 | 0.7638 | 0.7024 | 0.7842 |
 
 In this run, prompt repetition produced most of the lift: `base 2x` improved
 `+2.52pp` over `base 1x`, while `controller 2x` improved only another `+0.37pp`
 over `base 2x`. The controller alone was nearly flat at `+0.20pp`.
+
+Tracked baseline summaries for the base `1x` and `2x` runs are stored in
+`benchmarks/gemma_ifeval_base_baselines.json` so new controller experiments can
+compare against them without rerunning the base model each time.
+Prompt-repeat distillation results are tracked in
+`benchmarks/gemma_prompt_repeat_distillation.json`.
 
 ## Current Limits
 
@@ -178,8 +241,9 @@ over `base 2x`. The controller alone was nearly flat at `+0.20pp`.
   keep a long-lived model service warm.
 - Attention masks and controller integration are reference implementations, not
   optimized paths for very long context.
-- The controller training loop still processes examples one by one, without a
-  batching/padding pipeline.
+- The prompt-repeat distillation trainer caches frozen Gemma hidden-state pairs
+  before batching controller updates, but inference is still a single-prompt
+  token loop.
 
 ## License And Attribution
 

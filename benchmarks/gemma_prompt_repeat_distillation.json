@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "benchmark": "IFEval",
+  "input_data_path": "instruction_following_eval/data/input_data.jsonl",
+  "model_id": "google/gemma-4-E2B-it",
+  "decoding": {
+    "max_new_tokens": 512,
+    "temperature": 0.0,
+    "top_k": 50,
+    "system_prompt": null
+  },
+  "notes": "Prompt-repeat distillation maps the final hidden state after a single prompt toward the final hidden state after the same prompt repeated twice. Raw responses and eval jsonl files remain under ignored artifacts/ directories.",
+  "variants": {
+    "prompt_repeat_distill_v2_s0p5_full": {
+      "label": "Prompt-repeat distill v2 1x, strength 0.5",
+      "prompt_repeats": 1,
+      "controller": {
+        "kind": "last_token_hidden_state",
+        "checkpoint": "artifacts/gemma-prompt-repeat-distill-v2-best.pt",
+        "strength": 0.5,
+        "config": {
+          "hidden_size": 1536,
+          "controller_dim": 256,
+          "hidden_dim": 1024,
+          "dropout": 0.0,
+          "zero_init_output": true
+        },
+        "parameters": 2234112
+      },
+      "source_artifact": "artifacts/gemma-ifeval-prompt-repeat-distill-v2-s0p5-full/controller/summary.json",
+      "command": [
+        "uv",
+        "run",
+        "llm-enhance-gemma-ifeval",
+        "--controller-only",
+        "--last-token-controller-checkpoint",
+        "artifacts/gemma-prompt-repeat-distill-v2-best.pt",
+        "--controller-strength",
+        "0.5",
+        "--output-dir",
+        "artifacts/gemma-ifeval-prompt-repeat-distill-v2-s0p5-full"
+      ],
+      "training": {
+        "source_artifact": "artifacts/gemma-prompt-repeat-distill-v2-best.pt",
+        "objective": "last_token_prompt_repeat_distillation",
+        "prompt_repeats": 2,
+        "epochs": 20,
+        "train_examples": 384,
+        "val_examples": 96,
+        "batch_size": 16,
+        "cosine_weight": 0.1,
+        "train_loss": 1.2734411184986432,
+        "val_loss": 1.5618064811763663,
+        "train_source_baseline_loss": 4.169698238372803,
+        "val_source_baseline_loss": 4.312904357910156
+      },
+      "final_score": 0.7326465999104598,
+      "delta_vs_base_1x": 0.0,
+      "delta_vs_base_2x": -0.02522916971413617,
+      "delta_vs_controller_2x": -0.028926027385116065,
+      "summary": {
+        "examples": 541,
+        "strict": {
+          "prompt_accuracy": 0.6802218114602587,
+          "instruction_accuracy": 0.7637889688249401
+        },
+        "loose": {
+          "prompt_accuracy": 0.7024029574861368,
+          "instruction_accuracy": 0.7841726618705036
+        }
+      },
+      "interpretation": "The v2 last-token controller matched the base 1x final score but did not reproduce the full prompt-repeat lift. It slightly improved strict prompt and instruction accuracy while reducing loose prompt and instruction accuracy."
+    },
+    "prompt_repeat_distill_v2_s0p5_smoke": {
+      "label": "Prompt-repeat distill v2 1x, strength 0.5, first 50 examples",
+      "prompt_repeats": 1,
+      "controller": {
+        "kind": "last_token_hidden_state",
+        "checkpoint": "artifacts/gemma-prompt-repeat-distill-v2-best.pt",
+        "strength": 0.5
+      },
+      "source_artifact": "artifacts/gemma-ifeval-prompt-repeat-distill-v2-s0p5-smoke/controller/summary.json",
+      "final_score": 0.7713157894736842,
+      "summary": {
+        "examples": 50,
+        "strict": {
+          "prompt_accuracy": 0.74,
+          "instruction_accuracy": 0.7894736842105263
+        },
+        "loose": {
+          "prompt_accuracy": 0.74,
+          "instruction_accuracy": 0.8157894736842105
+        }
+      },
+      "interpretation": "The first-50 smoke result was not representative of the full IFEval run."
+    }
+  }
+}

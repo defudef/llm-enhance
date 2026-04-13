@@ -111,6 +111,11 @@ class FakeLmHead(torch.nn.Module):
         return logits
 
 
+class FakeLastTokenController(torch.nn.Module):
+    def forward(self, last_hidden_state):
+        return torch.ones_like(last_hidden_state)
+
+
 class FakeTextConfig:
     final_logit_softcapping = None
 
@@ -213,6 +218,28 @@ class GemmaRuntimeTests(unittest.TestCase):
         self.assertEqual(language_model.calls[1]["input_ids_shape"], (1, 1))
         self.assertEqual(language_model.calls[1]["past_key_values"], "cache-0")
         self.assertTrue(all(call["use_cache"] for call in language_model.calls))
+
+    def test_generate_can_steer_first_logits_with_last_token_controller(self) -> None:
+        runtime = object.__new__(GemmaSoftPromptRuntime)
+        runtime.device = torch.device("cpu")
+        runtime.tokenizer = FakeTokenizer()
+        runtime.model = FakeGemmaModel()
+
+        response = runtime.generate(
+            prompt="hello",
+            system_prompt=None,
+            controller=None,
+            controller_strength=1.0,
+            last_token_controller=FakeLastTokenController(),
+            max_new_tokens=4,
+            temperature=0.0,
+            top_k=0,
+        )
+
+        language_model = runtime.model.model.language_model
+        self.assertEqual(response, "")
+        self.assertEqual(len(language_model.calls), 1)
+        self.assertEqual(language_model.calls[0]["input_ids_shape"][1], len("user:hello | assistant:"))
 
 
 if __name__ == "__main__":
