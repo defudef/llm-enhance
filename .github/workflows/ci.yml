@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Check lockfile
+        run: uv lock --check
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run unit tests
+        run: uv run --frozen python -m unittest discover -s tests
+
+      - name: Build package
+        run: uv build
+
+  macos-mlx-smoke:
+    name: MLX smoke
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Verify MLX install and backend selection
+        run: |
+          uv run --frozen python - <<'PY'
+          import sys
+
+          import mlx.core
+          import mlx_lm
+
+          from llm_enhance.gemma_backend import select_auto_backend
+
+          assert sys.platform == "darwin"
+          assert select_auto_backend(
+              platform="darwin",
+              cuda_available=False,
+              mps_available=True,
+          ) == "mlx"
+          print("MLX import and backend selection OK")
+          PY
