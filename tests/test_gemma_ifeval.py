@@ -1,3 +1,4 @@
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -6,6 +7,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from llm_enhance.gemma_ifeval import app, build_response_record, repeat_prompt  # noqa: E402
 from typer.testing import CliRunner  # noqa: E402
+
+
+ANSI_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def strip_ansi(text: str) -> str:
+    return ANSI_RE.sub("", text)
 
 
 class GemmaIFEvalTests(unittest.TestCase):
@@ -42,7 +50,7 @@ class GemmaIFEvalTests(unittest.TestCase):
         )
 
         self.assertNotEqual(result.exit_code, 0)
-        self.assertIn("--save-every must be greater than 0", result.output)
+        self.assertIn("--save-every must be greater than 0", strip_ansi(result.output))
 
     def test_prompt_repeats_must_be_positive(self) -> None:
         result = CliRunner().invoke(
@@ -54,7 +62,7 @@ class GemmaIFEvalTests(unittest.TestCase):
         )
 
         self.assertNotEqual(result.exit_code, 0)
-        self.assertIn("--prompt-repeats must be greater than 0", result.output)
+        self.assertIn("--prompt-repeats must be greater than 0", strip_ansi(result.output))
 
     def test_controller_only_cannot_be_combined_with_base_only(self) -> None:
         result = CliRunner().invoke(
@@ -68,7 +76,7 @@ class GemmaIFEvalTests(unittest.TestCase):
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn(
             "--controller-only cannot be combined with --base-only",
-            result.output,
+            strip_ansi(result.output),
         )
 
     def test_missing_controller_checkpoint_fails_fast(self) -> None:
